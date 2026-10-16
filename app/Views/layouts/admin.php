@@ -4,12 +4,14 @@ use App\Models\Message;
 use Core\Csrf;
 use Core\Request;
 use Core\Session;
+use Core\Updater;
 use Core\View;
 
 $currentPath = Request::path();
 $siteTitle = setting('site_title', 'Bvlog');
 $pendingComments = Comment::count('status = "pending"');
 $unreadMessages = Message::count('is_read = 0');
+$updateInfo = Updater::check(false);
 ?>
 <!DOCTYPE html>
 <html lang="tr" x-data="{ darkMode: localStorage.getItem('bvlog_theme') === 'dark', sidebarOpen: false }"
@@ -132,9 +134,14 @@ $unreadMessages = Message::count('is_read = 0');
             </a>
 
             <a href="<?= e(url('/admin/settings')) ?>"
-               class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/settings') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
-                <i class="fa-solid fa-sliders w-4 text-center"></i>
-                <span>Site & Anasayfa Ayarları</span>
+               class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/settings') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
+                <span class="flex items-center gap-3">
+                    <i class="fa-solid fa-sliders w-4 text-center"></i>
+                    <span>Site & Sistem Ayarları</span>
+                </span>
+                <?php if (!empty($updateInfo['has_update'])): ?>
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse" title="Yeni güncelleme mevcut"></span>
+                <?php endif; ?>
             </a>
         </nav>
 
@@ -164,6 +171,16 @@ $unreadMessages = Message::count('is_read = 0');
             </div>
 
             <div class="flex items-center gap-2.5">
+                <?php if (!empty($updateInfo['has_update'])): ?>
+                    <a href="<?= e(url('/admin/settings?tab=updates')) ?>"
+                       class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+                       title="Yeni Bvlog sürümü mevcut: v<?= e($updateInfo['latest_version']) ?>">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        <i class="fa-solid fa-cloud-arrow-down text-xs"></i>
+                        <span>v<?= e($updateInfo['latest_version']) ?></span>
+                    </a>
+                <?php endif; ?>
+
                 <a href="<?= e(url('/admin/posts/create')) ?>"
                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 transition-opacity">
                     <i class="fa-solid fa-plus"></i>

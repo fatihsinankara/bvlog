@@ -25,11 +25,14 @@ class SettingsController extends Controller
             ['id' => 'contact_cta', 'title' => 'İletişim Çağrı Kutusu', 'enabled' => true],
         ]);
 
+        $updateInfo = \Core\Updater::check(false);
+
         $this->adminView('admin/settings/index', [
-            'settings'  => $settings,
-            'author'    => $author,
-            'sections'  => $sections,
-            'pageTitle' => 'Site & Modül Ayarları',
+            'settings'   => $settings,
+            'author'     => $author,
+            'sections'   => $sections,
+            'updateInfo' => $updateInfo,
+            'pageTitle'  => 'Site & Modül Ayarları',
         ]);
     }
 
@@ -136,5 +139,24 @@ class SettingsController extends Controller
 
         Session::flash('success', 'Ayarlar başarıyla kaydedildi.');
         $this->redirect('/admin/settings?tab=' . urlencode($tab));
+    }
+
+    public function checkUpdates(): void
+    {
+        $result = \Core\Updater::check(true);
+
+        if (Request::isAjax()) {
+            $this->json($result);
+        }
+
+        if (!empty($result['has_update'])) {
+            Session::flash('info', 'Yeni bir Bvlog sürümü mevcut: v' . $result['latest_version'] . '! Aşağıdaki bağlantıdan güncellemeyi inceleyebilirsiniz.');
+        } elseif (!empty($result['error'])) {
+            Session::flash('error', $result['error']);
+        } else {
+            Session::flash('success', 'Tebrikler! Bvlog sisteminiz güncel (v' . $result['current_version'] . ').');
+        }
+
+        $this->redirect('/admin/settings?tab=updates');
     }
 }
