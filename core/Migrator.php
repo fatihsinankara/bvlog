@@ -49,16 +49,46 @@ class Migrator
 
     private static function runVersionedMigrations(\PDO $pdo, string $fromVersion): void
     {
-        // Örnek: İleride 1.1.0 sürümünde mevcut bir tabloya yeni sütun ekleneceği zaman:
-        // if (version_compare($fromVersion, '1.1.0', '<')) {
-        //     self::addColumnIfNotExists($pdo, 'posts', 'reading_minutes', 'INT UNSIGNED DEFAULT NULL');
-        // }
+        if (version_compare($fromVersion, '1.2.0', '<')) {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `cv_skill_categories` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `name` VARCHAR(100) NOT NULL,
+                `display_order` INT DEFAULT 0,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+            self::addColumnIfNotExists($pdo, 'cv_skills', 'category_id', 'INT NULL AFTER id');
+
+            try {
+                $stmt = $pdo->query("SELECT DISTINCT category FROM cv_skills WHERE category IS NOT NULL AND category != ''");
+                $distinct = $stmt ? $stmt->fetchAll(\PDO::FETCH_COLUMN) : [];
+                $order = 1;
+                foreach ($distinct as $catName) {
+                    $catName = trim((string) $catName);
+                    if ($catName === '') {
+                        continue;
+                    }
+                    $find = $pdo->prepare("SELECT id FROM cv_skill_categories WHERE name = :name LIMIT 1");
+                    $find->execute(['name' => $catName]);
+                    $catId = $find->fetchColumn();
+                    if (!$catId) {
+                        $ins = $pdo->prepare("INSERT INTO cv_skill_categories (name, display_order) VALUES (:name, :ord)");
+                        $ins->execute(['name' => $catName, 'ord' => $order++]);
+                        $catId = $pdo->lastInsertId();
+                    }
+                    $upd = $pdo->prepare("UPDATE cv_skills SET category_id = :cid WHERE category = :cname AND (category_id IS NULL OR category_id = 0)");
+                    $upd->execute(['cid' => $catId, 'cname' => $catName]);
+                }
+            } catch (\Throwable $e) {
+                // Sessizce geç veya logla
+            }
+        }
     }
 
     public static function addColumnIfNotExists(\PDO $pdo, string $table, string $column, string $definition): void
     {
-        $stmt = $pdo->prepare("SHOW COLUMNS FROM `{$table}` LIKE :col");
-        $stmt->execute(['col' => $column]);
+        $stmt = $pdo->prepare("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tbl AND COLUMN_NAME = :col LIMIT 1");
+        $stmt->execute(['tbl' => $table, 'col' => $column]);
         if (!$stmt->fetch()) {
             $pdo->exec("ALTER TABLE `{$table}` ADD COLUMN `{$column}` {$definition}");
         }

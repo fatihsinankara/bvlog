@@ -29,6 +29,11 @@ $activeTab = Request::get('tab', 'experience');
                     class="px-4 py-2 rounded-lg transition-colors">
                 <i class="fa-solid fa-code mr-1.5"></i>Teknik Yetenekler (<?= count($skills) ?>)
             </button>
+            <button type="button" @click="tab = 'categories'"
+                    :class="tab === 'categories' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400'"
+                    class="px-4 py-2 rounded-lg transition-colors">
+                <i class="fa-solid fa-layer-group mr-1.5"></i>Yetenek Grupları (<?= count($categories) ?>)
+            </button>
         </div>
 
         <div class="flex items-center gap-2.5">
@@ -51,11 +56,24 @@ $activeTab = Request::get('tab', 'experience');
                 <span>Yeni Eğitim Bilgisi Ekle</span>
             </a>
 
-            <a x-show="tab === 'skills'" style="display: none;"
-               href="<?= e(url('/admin/cv/skill/create')) ?>"
+            <div x-show="tab === 'skills'" style="display: none;" class="flex items-center gap-2">
+                <button type="button" @click="tab = 'categories'"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                    <i class="fa-solid fa-layer-group text-zinc-400"></i>
+                    <span>Grupları Yönet</span>
+                </button>
+                <a href="<?= e(url('/admin/cv/skill/create')) ?>"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-semibold hover:opacity-90">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Yeni Yetenek Ekle</span>
+                </a>
+            </div>
+
+            <a x-show="tab === 'categories'" style="display: none;"
+               href="<?= e(url('/admin/cv/category/create')) ?>"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-semibold hover:opacity-90">
                 <i class="fa-solid fa-plus"></i>
-                <span>Yeni Yetenek Ekle</span>
+                <span>Yeni Kategori Ekle</span>
             </a>
         </div>
     </div>
@@ -99,7 +117,7 @@ $activeTab = Request::get('tab', 'experience');
                                     <div class="inline-flex items-center gap-1.5">
                                         <a href="<?= e(url('/admin/cv/experience/' . $exp['id'] . '/edit')) ?>"
                                            class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Düzenle">
-                                            <i class="fa-solid fa-pen"></i>
+                                             <i class="fa-solid fa-pen"></i>
                                         </a>
                                         <form action="<?= e(url('/admin/cv/experience/' . $exp['id'] . '/delete')) ?>"
                                               method="POST"
@@ -207,8 +225,9 @@ $activeTab = Request::get('tab', 'experience');
                                     <?= e($sk['name']) ?>
                                 </td>
                                 <td class="py-3.5 px-4">
-                                    <span class="px-2.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-medium">
-                                        <?= e($sk['category']) ?>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-medium">
+                                        <i class="fa-solid fa-folder text-[10px] text-zinc-400"></i>
+                                        <?= e($sk['category_name'] ?? $sk['category']) ?>
                                     </span>
                                 </td>
                                 <td class="py-3.5 px-4 w-56">
@@ -230,6 +249,65 @@ $activeTab = Request::get('tab', 'experience');
                                               method="POST"
                                               data-confirm="“<?= e($sk['name']) ?>” yeteneğini silmek istediğinize emin misiniz?"
                                               data-confirm-title="Yeteneği Sil"
+                                              class="inline">
+                                            <?= csrf_field() ?>
+                                            <button type="submit" class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40" title="Sil">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SEKME 4: YETENEK KATEGORİLERİ / GRUPLARI LİSTESİ -->
+    <div x-show="tab === 'categories'" style="display: none;" class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50 text-zinc-500 font-semibold">
+                        <th class="py-3 px-4">Kategori / Grup Adı</th>
+                        <th class="py-3 px-4">Bağlı Yetenekler</th>
+                        <th class="py-3 px-4">Sıralama</th>
+                        <th class="py-3 px-4 text-right">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    <?php if (empty($categories)): ?>
+                        <tr>
+                            <td colspan="4" class="py-12 text-center text-zinc-500">Henüz yetenek grubu eklenmemiş.</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($categories as $cat): ?>
+                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors">
+                                <td class="py-3.5 px-4">
+                                    <div class="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                                        <i class="fa-solid fa-layer-group text-zinc-400"></i>
+                                        <span><?= e($cat['name']) ?></span>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-semibold text-[11px]">
+                                        <i class="fa-solid fa-code text-[10px] text-zinc-400"></i>
+                                        <?= (int) ($cat['skill_count'] ?? 0) ?> Yetenek
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4 font-mono text-[11px]"><?= (int) $cat['display_order'] ?></td>
+                                <td class="py-3.5 px-4 text-right">
+                                    <div class="inline-flex items-center gap-1.5">
+                                        <a href="<?= e(url('/admin/cv/category/' . $cat['id'] . '/edit')) ?>"
+                                           class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Düzenle">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        <form action="<?= e(url('/admin/cv/category/' . $cat['id'] . '/delete')) ?>"
+                                              method="POST"
+                                              data-confirm="“<?= e($cat['name']) ?>” yetenek kategorisini silmek istediğinize emin misiniz?<?= ((int)($cat['skill_count'] ?? 0) > 0) ? ' (Bu kategoriye bağlı ' . (int)$cat['skill_count'] . ' yetenek bulunmaktadır)' : '' ?>"
+                                              data-confirm-title="Kategoriyi Sil"
                                               class="inline">
                                             <?= csrf_field() ?>
                                             <button type="submit" class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40" title="Sil">

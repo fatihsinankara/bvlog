@@ -272,13 +272,18 @@ HTML;
                 $pdo->exec("INSERT INTO cv_educations (institution, degree, field_of_study, start_date, end_date, is_current, description, display_order) VALUES
                     ('Teknik Üniversite', 'Lisans Derecesi', 'Bilgisayar Mühendisliği', '2016', '2020', 0, 'Yazılım mühendisliği, veri yapıları, ağ güvenliği ve dağıtık sistemler üzerine onur derecesi ile mezuniyet.', 1)");
 
-                $pdo->exec("INSERT INTO cv_skills (category, name, proficiency, display_order) VALUES
-                    ('Backend & Veritabanı', 'PHP 8+ / OOP Mimari', 95, 1),
-                    ('Backend & Veritabanı', 'MySQL / MariaDB Optimizasyonu', 90, 2),
-                    ('Backend & Veritabanı', 'Uygulama Güvenliği (OWASP)', 90, 3),
-                    ('Frontend & Arayüz', 'Tailwind CSS', 95, 1),
-                    ('Frontend & Arayüz', 'Alpine.js & Modern JS', 85, 2),
-                    ('Araçlar & DevOps', 'Git, Linux & Sunucu Yönetimi', 85, 1)");
+                $pdo->exec("INSERT INTO cv_skill_categories (id, name, display_order) VALUES
+                    (1, 'Backend & Veritabanı', 1),
+                    (2, 'Frontend & Arayüz', 2),
+                    (3, 'Araçlar & DevOps', 3)");
+
+                $pdo->exec("INSERT INTO cv_skills (category_id, category, name, proficiency, display_order) VALUES
+                    (1, 'Backend & Veritabanı', 'PHP 8+ / OOP Mimari', 95, 1),
+                    (1, 'Backend & Veritabanı', 'MySQL / MariaDB Optimizasyonu', 90, 2),
+                    (1, 'Backend & Veritabanı', 'Uygulama Güvenliği (OWASP)', 90, 3),
+                    (2, 'Frontend & Arayüz', 'Tailwind CSS', 95, 1),
+                    (2, 'Frontend & Arayüz', 'Alpine.js & Modern JS', 85, 2),
+                    (3, 'Araçlar & DevOps', 'Git, Linux & Sunucu Yönetimi', 85, 1)");
             }
 
             // 9. Kurulum Kilidi Oluştur

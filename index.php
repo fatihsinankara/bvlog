@@ -118,6 +118,13 @@ Core\Router::get('/admin/cv/education/{id}/edit', [App\Controllers\Admin\CvContr
 Core\Router::post('/admin/cv/education/{id}/update', [App\Controllers\Admin\CvController::class, 'updateEducation'], ['auth']);
 Core\Router::post('/admin/cv/education/{id}/delete', [App\Controllers\Admin\CvController::class, 'deleteEducation'], ['auth']);
 
+Core\Router::get('/admin/cv/category/create', [App\Controllers\Admin\CvController::class, 'createCategory'], ['auth']);
+Core\Router::post('/admin/cv/category', [App\Controllers\Admin\CvController::class, 'storeCategory'], ['auth']);
+Core\Router::post('/admin/cv/category/quick', [App\Controllers\Admin\CvController::class, 'quickStoreCategory'], ['auth']);
+Core\Router::get('/admin/cv/category/{id}/edit', [App\Controllers\Admin\CvController::class, 'editCategory'], ['auth']);
+Core\Router::post('/admin/cv/category/{id}/update', [App\Controllers\Admin\CvController::class, 'updateCategory'], ['auth']);
+Core\Router::post('/admin/cv/category/{id}/delete', [App\Controllers\Admin\CvController::class, 'deleteCategory'], ['auth']);
+
 Core\Router::get('/admin/cv/skill/create', [App\Controllers\Admin\CvController::class, 'createSkill'], ['auth']);
 Core\Router::post('/admin/cv/skill', [App\Controllers\Admin\CvController::class, 'storeSkill'], ['auth']);
 Core\Router::get('/admin/cv/skill/{id}/edit', [App\Controllers\Admin\CvController::class, 'editSkill'], ['auth']);
