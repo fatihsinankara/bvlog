@@ -13,24 +13,61 @@ class RateLimiter
         return $dir . '/ratelimit.json';
     }
 
-    private static function loadData(): array
+    /**
+     * Dosya tabanlı atomik kilit mekanizması ve çöp toplama (garbage collection)
+     */
+    private static function withLock(callable $callback): mixed
+    {
+        $file = self::getStoragePath();
+        $handle = @fopen($file, 'c+');
+        if (!$handle) {
+            $dummy = [];
+            return $callback($dummy);
+        }
+
+        flock($handle, LOCK_EX);
+
+        clearstatcache(true, $file);
+        $size = filesize($file);
+        $content = $size > 0 ? fread($handle, $size) : '';
+        $data = !empty($content) ? json_decode($content, true) : [];
+        if (!is_array($data)) {
+            $data = [];
+        }
+
+        $result = $callback($data);
+
+        // 24 saatten eski kayıtları temizle
+        $now = time();
+        foreach ($data as $k => $item) {
+            if (!isset($item['first_attempt']) || ($now - $item['first_attempt'] > 86400)) {
+                unset($data[$k]);
+            }
+        }
+
+        ftruncate($handle, 0);
+        rewind($handle);
+        fwrite($handle, json_encode($data, JSON_UNESCAPED_SLASHES));
+        fflush($handle);
+        flock($handle, LOCK_UN);
+        fclose($handle);
+
+        return $result;
+    }
+
+    private static function readData(): array
     {
         $file = self::getStoragePath();
         if (!file_exists($file)) {
             return [];
         }
-        $data = json_decode((string) file_get_contents($file), true);
+        $data = json_decode((string) @file_get_contents($file), true);
         return is_array($data) ? $data : [];
-    }
-
-    private static function saveData(array $data): void
-    {
-        file_put_contents(self::getStoragePath(), json_encode($data), LOCK_EX);
     }
 
     public static function tooManyAttempts(string $key, int $maxAttempts = 5, int $decaySeconds = 900): bool
     {
-        $data = self::loadData();
+        $data = self::readData();
         $now = time();
 
         if (!isset($data[$key])) {
@@ -38,8 +75,6 @@ class RateLimiter
         }
 
         if ($now - $data[$key]['first_attempt'] > $decaySeconds) {
-            unset($data[$key]);
-            self::saveData($data);
             return false;
         }
 
@@ -48,34 +83,31 @@ class RateLimiter
 
     public static function hit(string $key, int $decaySeconds = 900): int
     {
-        $data = self::loadData();
-        $now = time();
-
-        if (!isset($data[$key]) || ($now - $data[$key]['first_attempt'] > $decaySeconds)) {
-            $data[$key] = [
-                'attempts' => 1,
-                'first_attempt' => $now,
-            ];
-        } else {
-            $data[$key]['attempts']++;
-        }
-
-        self::saveData($data);
-        return $data[$key]['attempts'];
+        return (int) self::withLock(function (array &$data) use ($key, $decaySeconds) {
+            $now = time();
+            if (!isset($data[$key]) || ($now - $data[$key]['first_attempt'] > $decaySeconds)) {
+                $data[$key] = [
+                    'attempts'      => 1,
+                    'first_attempt' => $now,
+                ];
+            } else {
+                $data[$key]['attempts']++;
+            }
+            return $data[$key]['attempts'];
+        });
     }
 
     public static function clear(string $key): void
     {
-        $data = self::loadData();
-        if (isset($data[$key])) {
+        self::withLock(function (array &$data) use ($key) {
             unset($data[$key]);
-            self::saveData($data);
-        }
+            return null;
+        });
     }
 
     public static function availableIn(string $key, int $decaySeconds = 900): int
     {
-        $data = self::loadData();
+        $data = self::readData();
         if (!isset($data[$key])) {
             return 0;
         }

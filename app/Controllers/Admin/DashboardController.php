@@ -27,8 +27,8 @@ class DashboardController extends Controller
             'unread_messages' => Message::count('is_read = 0'),
         ];
 
-        $recentPosts = array_slice(Post::allForAdmin(), 0, 5);
-        $recentComments = array_slice(Comment::allWithPost(), 0, 5);
+        $recentPosts = Post::latestForAdmin(5);
+        $recentComments = Comment::latestWithPost(5);
         $quarantinedPlugins = Setting::getJson('quarantined_plugins', []);
         $updateInfo = \Core\Updater::check(false);
 

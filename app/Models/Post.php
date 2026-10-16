@@ -98,6 +98,18 @@ class Post extends Model
         );
     }
 
+    public static function latestForAdmin(int $limit = 5): array
+    {
+        return Database::fetchAll(
+            "SELECT p.id, p.title, p.slug, p.status, p.created_at, p.published_at, p.views_count,
+                    c.name AS category_name, c.color AS category_color, c.icon AS category_icon
+             FROM posts p
+             LEFT JOIN categories c ON c.id = p.category_id
+             ORDER BY p.id DESC
+             LIMIT {$limit}"
+        );
+    }
+
     public static function ensureUniqueSlug(string $slug, ?int $ignoreId = null): string
     {
         $base = $slug;
