@@ -12,6 +12,7 @@ use Core\Database;
 use Core\Hook;
 use Core\RateLimiter;
 use Core\Request;
+use Core\Response;
 use Core\Router;
 use Core\Security;
 use Core\Seo;
@@ -80,11 +81,24 @@ class BlogController extends Controller
         ]);
     }
 
-    public function show(string $slug): void
+    public function show(string $arg1, ?string $arg2 = null): void
     {
+        $slug = $arg2 !== null ? $arg2 : $arg1;
+
         $post = Post::findDetailedBySlug($slug);
         if (!$post || ($post['status'] !== 'published' && !Session::has('admin_user_id'))) {
             Router::abort(404, 'Aradığınız yazı bulunamadı.');
+        }
+
+        // Canonical URL ve kalıcı yönlendirme (301) kontrolü
+        if ($post['status'] === 'published' && !Session::has('admin_user_id')) {
+            $canonicalUrl = post_url($post);
+            $canonicalPath = parse_url($canonicalUrl, PHP_URL_PATH) ?: '';
+            $currentPath = Request::path();
+
+            if ($canonicalPath !== '' && $currentPath !== $canonicalPath) {
+                Response::redirect($canonicalUrl, 301);
+            }
         }
 
         // Görüntülenme sayısını oturum başına bir kez artır
@@ -117,8 +131,10 @@ class BlogController extends Controller
         ]);
     }
 
-    public function storeComment(string $slug): void
+    public function storeComment(string $arg1, ?string $arg2 = null): void
     {
+        $slug = $arg2 !== null ? $arg2 : $arg1;
+
         if (!is_module_active('comments')) {
             Router::abort(404);
         }
@@ -128,16 +144,18 @@ class BlogController extends Controller
             Router::abort(404);
         }
 
+        $postUrl = post_url($post);
+
         // Honeypot spam kontrolü
         if (!empty(Request::post('website_hp'))) {
-            $this->redirect('/blog/' . $slug);
+            $this->redirect($postUrl);
         }
 
         $ip = Security::getClientIp();
         $rateKey = 'comment_' . $ip;
         if (RateLimiter::tooManyAttempts($rateKey, 3, 300)) {
             Session::flash('error', 'Çok sık yorum gönderiyorsunuz. Lütfen birkaç dakika bekleyin.');
-            $this->redirect('/blog/' . $slug . '#comments');
+            $this->redirect($postUrl . '#comments');
         }
 
         $name = Request::post('author_name', '');
@@ -146,7 +164,7 @@ class BlogController extends Controller
 
         if (mb_strlen($name) < 2 || !filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($content) < 3) {
             Session::flash('error', 'Lütfen adınızı, geçerli e-posta adresinizi ve yorumunuzu eksiksiz girin.');
-            $this->redirect('/blog/' . $slug . '#comments');
+            $this->redirect($postUrl . '#comments');
         }
 
         RateLimiter::hit($rateKey, 300);
@@ -169,6 +187,6 @@ class BlogController extends Controller
             Session::flash('success', 'Yorumunuz başarıyla yayınlandı.');
         }
 
-        $this->redirect('/blog/' . $slug . '#comments');
+        $this->redirect($postUrl . '#comments');
     }
 }

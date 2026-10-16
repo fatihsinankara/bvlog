@@ -1,6 +1,15 @@
 <?php
 $isEdit = !empty($post);
 $actionUrl = $isEdit ? url('/admin/posts/' . $post['id'] . '/update') : url('/admin/posts');
+
+$permalinkStructure = setting('permalink_structure', 'default');
+$slugPrefix = match($permalinkStructure) {
+    'category_slug' => !empty($post['category_slug']) ? ('/' . $post['category_slug'] . '/') : '/[kategori]/',
+    'blog_category_slug' => !empty($post['category_slug']) ? ('/blog/' . $post['category_slug'] . '/') : '/blog/[kategori]/',
+    'post_only' => '/',
+    default => '/blog/',
+};
+$basePreviewUrl = url(rtrim($slugPrefix, '/')) . '/';
 ?>
 
 <form action="<?= e($actionUrl) ?>" method="POST" enctype="multipart/form-data"
@@ -12,7 +21,7 @@ $actionUrl = $isEdit ? url('/admin/posts/' . $post['id'] . '/update') : url('/ad
           seoDesc: <?= e(json_encode($post['seo_description'] ?? '')) ?>,
           coverImage: <?= e(json_encode($post['cover_image'] ?? '')) ?>,
           siteTitle: <?= e(json_encode(setting('site_title', 'Bvlog'))) ?>,
-          baseUrl: <?= e(json_encode(url('/blog/'))) ?>
+          baseUrl: <?= e(json_encode($basePreviewUrl)) ?>
       })"
       @submit="syncEditorContent()"
       class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -33,7 +42,7 @@ $actionUrl = $isEdit ? url('/admin/posts/' . $post['id'] . '/update') : url('/ad
             <div>
                 <label class="block text-xs font-semibold mb-1">Kalıcı Bağlantı (Slug)</label>
                 <div class="flex items-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 overflow-hidden text-xs">
-                    <span class="px-3 py-2 text-zinc-400 border-r border-zinc-200 dark:border-zinc-800 select-none">/blog/</span>
+                    <span class="px-3 py-2 text-zinc-400 border-r border-zinc-200 dark:border-zinc-800 select-none font-mono"><?= e($slugPrefix) ?></span>
                     <input type="text" name="slug" x-model="slug" @input="slugEdited = true"
                            placeholder="otomatik-olusturulur"
                            class="w-full px-3 py-2 bg-transparent focus:outline-none font-mono">

@@ -110,7 +110,7 @@ use Core\View;
             <?php endif; ?>
 
             <!-- Yorum Formu -->
-            <form action="<?= e(url('/blog/' . $post['slug'] . '/comment')) ?>" method="POST" class="p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-900/30 space-y-4">
+            <form action="<?= e(post_url($post) . '/comment') ?>" method="POST" class="p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-900/30 space-y-4">
                 <?= csrf_field() ?>
                 <input type="text" name="website_hp" value="" class="hidden" tabindex="-1" autocomplete="off">
                 <h3 class="text-sm font-bold">Yorum Bırakın</h3>

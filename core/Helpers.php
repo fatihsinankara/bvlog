@@ -40,6 +40,27 @@ if (!function_exists('url')) {
     }
 }
 
+if (!function_exists('post_url')) {
+    function post_url(array|string $post, ?string $categorySlug = null): string
+    {
+        $slug = is_array($post) ? ($post['slug'] ?? '') : (string) $post;
+        $catSlug = is_array($post) ? ($post['category_slug'] ?? $categorySlug ?? '') : ($categorySlug ?? '');
+
+        $structure = setting('permalink_structure', 'default');
+
+        return match ($structure) {
+            'category_slug' => !empty($catSlug)
+                ? url('/' . ltrim($catSlug, '/') . '/' . ltrim($slug, '/'))
+                : url('/blog/' . ltrim($slug, '/')),
+            'blog_category_slug' => !empty($catSlug)
+                ? url('/blog/' . ltrim($catSlug, '/') . '/' . ltrim($slug, '/'))
+                : url('/blog/' . ltrim($slug, '/')),
+            'post_only' => url('/' . ltrim($slug, '/')),
+            default => url('/blog/' . ltrim($slug, '/')),
+        };
+    }
+}
+
 if (!function_exists('current_url')) {
     function current_url(): string
     {

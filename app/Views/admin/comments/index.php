@@ -25,7 +25,7 @@
                         <p class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed"><?= e($c['content']) ?></p>
                         <?php if (!empty($c['post_title'])): ?>
                             <div class="text-zinc-400">
-                                Yazı: <a href="<?= e(url('/blog/' . $c['post_slug'])) ?>" target="_blank" class="underline hover:text-zinc-700"><?= e($c['post_title']) ?></a>
+                                Yazı: <a href="<?= e(post_url($c['post_slug'], $c['category_slug'] ?? null)) ?>" target="_blank" class="underline hover:text-zinc-700"><?= e($c['post_title']) ?></a>
                             </div>
                         <?php endif; ?>
                     </div>

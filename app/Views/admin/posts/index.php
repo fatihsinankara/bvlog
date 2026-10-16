@@ -46,7 +46,7 @@ use Core\View;
                                                     <i class="fa-solid fa-star text-amber-500 ml-1 text-xs" title="Öne Çıkan Yazı"></i>
                                                 <?php endif; ?>
                                             </a>
-                                            <span class="text-[11px] text-zinc-400">/blog/<?= e($p['slug']) ?></span>
+                                            <span class="text-[11px] text-zinc-400 font-mono"><?= e(parse_url(post_url($p), PHP_URL_PATH)) ?></span>
                                         </div>
                                     </div>
                                 </td>
@@ -74,7 +74,7 @@ use Core\View;
                                 <td class="py-3.5 px-4 text-zinc-500"><?= e(format_date($p['published_at'] ?: $p['created_at'])) ?></td>
                                 <td class="py-3.5 px-4 text-right">
                                     <div class="inline-flex items-center gap-1.5">
-                                        <a href="<?= e(url('/blog/' . $p['slug'])) ?>" target="_blank" class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Görüntüle">
+                                        <a href="<?= e(post_url($p)) ?>" target="_blank" class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Görüntüle">
                                             <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                         </a>
                                         <a href="<?= e(url('/admin/posts/' . $p['id'] . '/edit')) ?>" class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Düzenle">

@@ -106,6 +106,12 @@ class SettingsController extends Controller
         } elseif ($tab === 'seo') {
             Setting::set('og_image', Request::post('og_image', ''));
             Setting::set('seo_allow_index', Request::post('seo_allow_index') ? '1' : '0');
+        } elseif ($tab === 'permalinks') {
+            $structure = Request::post('permalink_structure', 'default');
+            if (!in_array($structure, ['default', 'category_slug', 'blog_category_slug', 'post_only'], true)) {
+                $structure = 'default';
+            }
+            Setting::set('permalink_structure', $structure);
         } elseif ($tab === 'security') {
             Setting::set('maintenance_mode', Request::post('maintenance_mode') ? '1' : '0');
             Setting::set('maintenance_message', Request::post('maintenance_message', ''));

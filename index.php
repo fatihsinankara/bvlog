@@ -156,4 +156,16 @@ Core\Router::post('/admin/plugins/delete', [App\Controllers\Admin\PluginControll
 Core\Router::get('/admin/settings', [App\Controllers\Admin\SettingsController::class, 'index'], ['auth']);
 Core\Router::post('/admin/settings', [App\Controllers\Admin\SettingsController::class, 'update'], ['auth']);
 
+// 6. Dinamik Kalıcı Bağlantı (Permalink) Rotaları
+// Tüm admin ve modül rotalarından sonra en son eşleşecek şekilde kaydedilir
+Core\Router::get('/blog/{category}/{slug}', [App\Controllers\BlogController::class, 'show']);
+Core\Router::post('/blog/{category}/{slug}/comment', [App\Controllers\BlogController::class, 'storeComment']);
+Core\Router::get('/{category}/{slug}', [App\Controllers\BlogController::class, 'show']);
+Core\Router::post('/{category}/{slug}/comment', [App\Controllers\BlogController::class, 'storeComment']);
+
+if (setting('permalink_structure', 'default') === 'post_only') {
+    Core\Router::get('/{slug}', [App\Controllers\BlogController::class, 'show']);
+    Core\Router::post('/{slug}/comment', [App\Controllers\BlogController::class, 'storeComment']);
+}
+
 Core\Router::dispatch();

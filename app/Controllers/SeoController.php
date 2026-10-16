@@ -48,7 +48,7 @@ class SeoController extends Controller
 
         foreach (Post::publishedList(500, 0) as $post) {
             $urls[] = [
-                'loc'        => url('/blog/' . $post['slug']),
+                'loc'        => post_url($post),
                 'priority'   => '0.8',
                 'changefreq' => 'weekly',
                 'lastmod'    => date('Y-m-d', strtotime($post['updated_at'] ?: $post['created_at'])),
@@ -86,7 +86,7 @@ class SeoController extends Controller
         $xml .= '    <atom:link href="' . e(url('/rss.xml')) . '" rel="self" type="application/rss+xml" />' . "\n";
 
         foreach ($posts as $post) {
-            $postUrl = url('/blog/' . $post['slug']);
+            $postUrl = post_url($post);
             $pubDate = date(DATE_RSS, strtotime($post['published_at'] ?: $post['created_at']));
             $summary = $post['summary'] ?: mb_substr(strip_tags($post['content']), 0, 240);
 

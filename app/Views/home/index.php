@@ -82,7 +82,7 @@ $authorAvatar = $author['avatar'] ?? '';
                             ]) ?>
                         </div>
                         <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
-                            <a href="<?= e(url('/blog/' . $heroPost['slug'])) ?>" class="hover:underline">
+                            <a href="<?= e(post_url($heroPost)) ?>" class="hover:underline">
                                 <?= e($heroPost['title']) ?>
                             </a>
                         </h1>
@@ -120,7 +120,7 @@ $authorAvatar = $author['avatar'] ?? '';
                         <div class="text-xs font-bold uppercase tracking-wider text-zinc-400">Son Notlar</div>
                         <?php foreach (array_slice($latestPosts, 0, 3) as $p): ?>
                             <div class="py-1.5">
-                                <a href="<?= e(url('/blog/' . $p['slug'])) ?>" class="text-sm font-semibold hover:underline block"><?= e($p['title']) ?></a>
+                                <a href="<?= e(post_url($p)) ?>" class="text-sm font-semibold hover:underline block"><?= e($p['title']) ?></a>
                                 <span class="text-xs text-zinc-500"><?= e(format_date($p['published_at'] ?: $p['created_at'])) ?></span>
                             </div>
                         <?php endforeach; ?>
@@ -150,7 +150,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                     <span class="text-xs text-zinc-500"><?= reading_time($fp['content']) ?> dk okuma</span>
                                 </div>
                                 <h3 class="text-base font-bold tracking-tight mb-2">
-                                    <a href="<?= e(url('/blog/' . $fp['slug'])) ?>" class="hover:underline">
+                                    <a href="<?= e(post_url($fp)) ?>" class="hover:underline">
                                         <?= e($fp['title']) ?>
                                     </a>
                                 </h3>
@@ -162,7 +162,7 @@ $authorAvatar = $author['avatar'] ?? '';
                             </div>
                             <div class="mt-4 pt-3 border-t border-zinc-200/70 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
                                 <span><?= e(format_date($fp['published_at'] ?: $fp['created_at'])) ?></span>
-                                <a href="<?= e(url('/blog/' . $fp['slug'])) ?>" class="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">Oku &rarr;</a>
+                                <a href="<?= e(post_url($fp)) ?>" class="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">Oku &rarr;</a>
                             </div>
                         </article>
                     <?php endforeach; ?>
@@ -198,7 +198,7 @@ $authorAvatar = $author['avatar'] ?? '';
                         <?php foreach ($latestPosts as $post): ?>
                             <article class="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col bg-white dark:bg-zinc-900/40 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors">
                                 <?php if (!empty($post['cover_image'])): ?>
-                                    <a href="<?= e(url('/blog/' . $post['slug'])) ?>" class="block aspect-[16/9] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800">
+                                    <a href="<?= e(post_url($post)) ?>" class="block aspect-[16/9] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800">
                                         <img src="<?= e(url($post['cover_image'])) ?>"
                                              alt="<?= e($post['title']) ?>"
                                              loading="lazy"
@@ -217,7 +217,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                             <span class="text-xs text-zinc-500"><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></span>
                                         </div>
                                         <h3 class="text-base font-bold tracking-tight mb-2">
-                                            <a href="<?= e(url('/blog/' . $post['slug'])) ?>" class="hover:underline"><?= e($post['title']) ?></a>
+                                            <a href="<?= e(post_url($post)) ?>" class="hover:underline"><?= e($post['title']) ?></a>
                                         </h3>
                                         <?php if (!empty($post['summary'])): ?>
                                             <p class="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed"><?= e($post['summary']) ?></p>
@@ -225,7 +225,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                     </div>
                                     <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
                                         <span><i class="fa-regular fa-clock mr-1"></i><?= reading_time($post['content']) ?> dk okuma</span>
-                                        <a href="<?= e(url('/blog/' . $post['slug'])) ?>" class="font-semibold text-zinc-900 dark:text-zinc-100">Devamını Oku &rarr;</a>
+                                        <a href="<?= e(post_url($post)) ?>" class="font-semibold text-zinc-900 dark:text-zinc-100">Devamını Oku &rarr;</a>
                                     </div>
                                 </div>
                             </article>
@@ -252,7 +252,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                         <?php endif; ?>
                                     </div>
                                     <h3 class="text-lg sm:text-xl font-bold tracking-tight">
-                                        <a href="<?= e(url('/blog/' . $post['slug'])) ?>" class="hover:underline">
+                                        <a href="<?= e(post_url($post)) ?>" class="hover:underline">
                                             <?= e($post['title']) ?>
                                         </a>
                                     </h3>
@@ -264,7 +264,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                 </div>
 
                                 <?php if (!empty($post['cover_image'])): ?>
-                                    <a href="<?= e(url('/blog/' . $post['slug'])) ?>" class="sm:w-36 sm:h-24 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 shrink-0 block">
+                                    <a href="<?= e(post_url($post)) ?>" class="sm:w-36 sm:h-24 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 shrink-0 block">
                                         <img src="<?= e(url($post['cover_image'])) ?>"
                                              alt="<?= e($post['title']) ?>"
                                              loading="lazy"

@@ -102,7 +102,7 @@ use Core\View;
                             <?php endif; ?>
                         </div>
                         <h2 class="text-lg sm:text-xl font-bold tracking-tight">
-                            <a href="<?= e(url('/blog/' . $post['slug'])) ?>" class="hover:underline">
+                            <a href="<?= e(post_url($post)) ?>" class="hover:underline">
                                 <?= e($post['title']) ?>
                             </a>
                         </h2>
@@ -114,7 +114,7 @@ use Core\View;
                     </div>
 
                     <?php if (!empty($post['cover_image'])): ?>
-                        <a href="<?= e(url('/blog/' . $post['slug'])) ?>" class="sm:w-40 sm:h-28 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 shrink-0 block bg-zinc-100 dark:bg-zinc-900">
+                        <a href="<?= e(post_url($post)) ?>" class="sm:w-40 sm:h-28 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 shrink-0 block bg-zinc-100 dark:bg-zinc-900">
                             <img src="<?= e(url($post['cover_image'])) ?>"
                                  alt="<?= e($post['title']) ?>"
                                  loading="lazy"
