@@ -100,17 +100,10 @@ $activeTab = Request::get('tab', 'general');
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold mb-1.5">Altbilgi (Footer) Telif Metni</label>
-                <input type="text" name="footer_text" value="<?= e($settings['footer_text'] ?? '') ?>"
-                       class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold mb-1.5">Sayfa Başına Yazı Sayısı</label>
-                <input type="number" name="posts_per_page" value="<?= (int) ($settings['posts_per_page'] ?? 10) ?>" min="1" max="50"
-                       class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
-            </div>
+        <div>
+            <label class="block text-xs font-semibold mb-1.5">Sayfa Başına Yazı Sayısı</label>
+            <input type="number" name="posts_per_page" value="<?= (int) ($settings['posts_per_page'] ?? 10) ?>" min="1" max="50"
+                   class="w-full sm:w-48 px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
         </div>
 
         <button type="submit" class="px-5 py-2.5 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-semibold hover:opacity-90">

@@ -43,7 +43,6 @@ class SettingsController extends Controller
             Setting::set('site_description', Request::post('site_description', ''));
             Setting::set('site_logo', Request::post('site_logo', ''));
             Setting::set('site_favicon', Request::post('site_favicon', ''));
-            Setting::set('footer_text', Request::post('footer_text', ''));
             Setting::set('posts_per_page', (string) max(1, min(50, (int) Request::post('posts_per_page', 10))));
         } elseif ($tab === 'profile') {
             $author = User::firstAuthor();

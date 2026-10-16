@@ -146,7 +146,7 @@ $currentPath = Request::path();
     <footer class="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 print:hidden">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 dark:text-zinc-400">
             <div>
-                <?= e(setting('footer_text', '© ' . date('Y') . ' ' . $siteTitle . '. Tüm hakları saklıdır.')) ?>
+                © <?= date('Y') ?> <a href="https://github.com/fatihsinankara/bvlog" target="_blank" rel="noopener noreferrer" class="font-medium hover:underline hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">Bvlog</a>. Tüm hakları saklıdır.
             </div>
             <div class="flex items-center gap-4 text-sm">
                 <?php if ($gh = setting('social_github')): ?>

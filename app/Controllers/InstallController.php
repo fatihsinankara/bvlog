@@ -166,7 +166,6 @@ class InstallController extends Controller
                 'site_title'          => $siteTitle,
                 'site_tagline'        => $siteTagline,
                 'site_description'    => $siteTitle . ' — ' . $siteTagline,
-                'footer_text'         => '© ' . date('Y') . ' ' . $siteTitle . '. Tüm hakları saklıdır.',
                 'author_name'         => $adminName,
                 'author_title'        => 'Kıdemli Yazılım Geliştirici',
                 'author_bio'          => $bioText,
