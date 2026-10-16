@@ -1,0 +1,8 @@
+{
+  "id": "paper",
+  "name": "Bvlog Paper (Minimal)",
+  "version": "1.0.0",
+  "author": "Bvlog",
+  "description": "Tipografi ve okuma sadeliğine odaklı editoryal blog teması.",
+  "supports": ["blog", "portfolio", "cv", "dark_mode"]
+}
