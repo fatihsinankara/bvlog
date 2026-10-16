@@ -47,19 +47,19 @@
     <div class="border-t border-zinc-100 pt-4">
         <div class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Opsiyonel Modüller (Daha sonra panelden değiştirilebilir)</div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-zinc-200 cursor-pointer hover:bg-zinc-50">
-                <input type="checkbox" name="module_portfolio" value="1" checked class="mt-0.5 rounded border-zinc-300">
-                <span class="text-xs">
+            <label class="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-zinc-200 cursor-pointer hover:bg-zinc-50 transition-colors">
+                <span class="text-xs space-y-0.5">
                     <strong class="block text-zinc-900 font-semibold">Portfolyo Modülü</strong>
-                    <span class="text-zinc-500">Projelerinizi, teknoloji etiketlerini ve canlı demo bağlantılarını sergileyin.</span>
+                    <span class="text-zinc-500">Projelerinizi ve canlı demo bağlantılarını sergileyin.</span>
                 </span>
+                <input type="checkbox" name="module_portfolio" value="1" role="switch" checked class="ios-switch shrink-0">
             </label>
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-zinc-200 cursor-pointer hover:bg-zinc-50">
-                <input type="checkbox" name="module_cv" value="1" checked class="mt-0.5 rounded border-zinc-300">
-                <span class="text-xs">
+            <label class="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-zinc-200 cursor-pointer hover:bg-zinc-50 transition-colors">
+                <span class="text-xs space-y-0.5">
                     <strong class="block text-zinc-900 font-semibold">CV / Özgeçmiş Modülü</strong>
-                    <span class="text-zinc-500">İş deneyimlerinizi, eğitiminizi ve yeteneklerinizi yazdırılabilir sayfada sunun.</span>
+                    <span class="text-zinc-500">İş deneyimi, eğitim ve yeteneklerinizi sunun.</span>
                 </span>
+                <input type="checkbox" name="module_cv" value="1" role="switch" checked class="ios-switch shrink-0">
             </label>
         </div>
     </div>

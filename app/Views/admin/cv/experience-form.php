@@ -60,9 +60,9 @@ $actionUrl = $isEdit ? url('/admin/cv/experience/' . $experience['id'] . '/updat
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-4 pt-1">
-            <label class="inline-flex items-center gap-2 text-xs font-medium cursor-pointer">
-                <input type="checkbox" name="is_current" value="1" x-model="isCurrent" class="rounded border-zinc-300">
-                <span>Halen burada çalışıyorum (Devam Ediyor)</span>
+            <label class="inline-flex items-center gap-3 text-xs font-medium cursor-pointer">
+                <input type="checkbox" name="is_current" value="1" role="switch" x-model="isCurrent" class="ios-switch shrink-0">
+                <span class="text-zinc-800 dark:text-zinc-200">Halen burada çalışıyorum (Devam Ediyor)</span>
             </label>
 
             <div class="flex items-center gap-2">

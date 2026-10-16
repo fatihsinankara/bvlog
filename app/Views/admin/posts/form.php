@@ -216,9 +216,12 @@ $basePreviewUrl = url(rtrim($slugPrefix, '/')) . '/';
                 </select>
             </div>
 
-            <label class="flex items-center gap-2.5 text-xs font-medium cursor-pointer pt-1">
-                <input type="checkbox" name="is_featured" value="1" <?= !empty($post['is_featured']) ? 'checked' : '' ?> class="rounded border-zinc-300">
-                <span>Bu yazıyı <strong>Öne Çıkanlar</strong> vitrininde göster</span>
+            <label class="flex items-center justify-between gap-3 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition-colors">
+                <div class="text-xs font-medium">
+                    <span class="block font-bold text-zinc-900 dark:text-zinc-100">Öne Çıkanlar Vitrini</span>
+                    <span class="text-zinc-500 text-[11px]">Bu yazıyı anasayfada öne çıkar</span>
+                </div>
+                <input type="checkbox" name="is_featured" value="1" role="switch" <?= !empty($post['is_featured']) ? 'checked' : '' ?> class="ios-switch shrink-0">
             </label>
 
             <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-2">

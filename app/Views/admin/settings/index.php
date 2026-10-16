@@ -230,7 +230,7 @@ $activeTab = Request::get('tab', 'general');
                 <template x-for="(sec, idx) in sections" :key="sec.id">
                     <div class="px-4 py-3 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-950/40 text-xs">
                         <label class="flex items-center gap-3 cursor-pointer font-medium">
-                            <input type="checkbox" x-model="sec.enabled" class="rounded border-zinc-300">
+                            <input type="checkbox" x-model="sec.enabled" role="switch" class="ios-switch">
                             <span x-text="(idx + 1) + '. ' + sec.title" :class="sec.enabled ? 'font-bold text-zinc-900 dark:text-zinc-100' : 'line-through text-zinc-400'"></span>
                         </label>
                         <div class="flex items-center gap-1">
@@ -262,44 +262,44 @@ $activeTab = Request::get('tab', 'general');
         <p class="text-xs text-zinc-500">Kişisel blogunuz her zaman aktiftir. İhtiyacınıza göre Portfolyo, CV, Yorum ve İletişim modüllerini açıp kapatabilirsiniz.</p>
 
         <div class="space-y-3">
-            <label class="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
-                <input type="checkbox" name="module_portfolio" value="1" <?= ($settings['module_portfolio'] ?? '1') === '1' ? 'checked' : '' ?> class="mt-0.5 rounded">
-                <div class="text-xs">
-                    <strong class="block text-sm font-bold">Portfolyo Modülü (/portfolio)</strong>
-                    <span class="text-zinc-500">Geliştirdiğiniz projeleri, kullanılan teknolojileri ve canlı demo bağlantılarını sergiler.</span>
+            <label class="flex items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                <div class="text-xs space-y-0.5">
+                    <strong class="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Portfolyo Modülü (/portfolio)</strong>
+                    <span class="text-zinc-500 dark:text-zinc-400">Geliştirdiğiniz projeleri, kullanılan teknolojileri ve canlı demo bağlantılarını sergiler.</span>
                 </div>
+                <input type="checkbox" name="module_portfolio" value="1" role="switch" <?= ($settings['module_portfolio'] ?? '1') === '1' ? 'checked' : '' ?> class="ios-switch shrink-0">
             </label>
 
-            <label class="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
-                <input type="checkbox" name="module_cv" value="1" <?= ($settings['module_cv'] ?? '1') === '1' ? 'checked' : '' ?> class="mt-0.5 rounded">
-                <div class="text-xs">
-                    <strong class="block text-sm font-bold">CV / Özgeçmiş Modülü (/cv)</strong>
-                    <span class="text-zinc-500">İş deneyimlerinizi, eğitiminizi ve yeteneklerinizi yazdırılabilir/PDF uyumlu sayfada sunar.</span>
+            <label class="flex items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                <div class="text-xs space-y-0.5">
+                    <strong class="block text-sm font-bold text-zinc-900 dark:text-zinc-100">CV / Özgeçmiş Modülü (/cv)</strong>
+                    <span class="text-zinc-500 dark:text-zinc-400">İş deneyimlerinizi, eğitiminizi ve yeteneklerinizi yazdırılabilir/PDF uyumlu sayfada sunar.</span>
                 </div>
+                <input type="checkbox" name="module_cv" value="1" role="switch" <?= ($settings['module_cv'] ?? '1') === '1' ? 'checked' : '' ?> class="ios-switch shrink-0">
             </label>
 
-            <label class="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
-                <input type="checkbox" name="module_comments" value="1" <?= ($settings['module_comments'] ?? '1') === '1' ? 'checked' : '' ?> class="mt-0.5 rounded">
-                <div class="text-xs">
-                    <strong class="block text-sm font-bold">Yazı Yorum Sistemi</strong>
-                    <span class="text-zinc-500">Ziyaretçilerin blog yazılarına yorum bırakmasına izin verir.</span>
+            <label class="flex items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                <div class="text-xs space-y-0.5">
+                    <strong class="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Yazı Yorum Sistemi</strong>
+                    <span class="text-zinc-500 dark:text-zinc-400">Ziyaretçilerin blog yazılarına yorum bırakmasına izin verir.</span>
                 </div>
+                <input type="checkbox" name="module_comments" value="1" role="switch" <?= ($settings['module_comments'] ?? '1') === '1' ? 'checked' : '' ?> class="ios-switch shrink-0">
             </label>
 
-            <label class="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
-                <input type="checkbox" name="comments_moderation" value="1" <?= ($settings['comments_moderation'] ?? '1') === '1' ? 'checked' : '' ?> class="mt-0.5 rounded">
-                <div class="text-xs">
-                    <strong class="block text-sm font-bold">Yorum Moderasyon Zorunluluğu</strong>
-                    <span class="text-zinc-500">Yeni yorumlar doğrudan yayınlanmaz, yönetici onayına düşer.</span>
+            <label class="flex items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                <div class="text-xs space-y-0.5">
+                    <strong class="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Yorum Moderasyon Zorunluluğu</strong>
+                    <span class="text-zinc-500 dark:text-zinc-400">Yeni yorumlar doğrudan yayınlanmaz, yönetici onayına düşer.</span>
                 </div>
+                <input type="checkbox" name="comments_moderation" value="1" role="switch" <?= ($settings['comments_moderation'] ?? '1') === '1' ? 'checked' : '' ?> class="ios-switch shrink-0">
             </label>
 
-            <label class="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
-                <input type="checkbox" name="module_contact" value="1" <?= ($settings['module_contact'] ?? '1') === '1' ? 'checked' : '' ?> class="mt-0.5 rounded">
-                <div class="text-xs">
-                    <strong class="block text-sm font-bold">İletişim Sayfası (/contact)</strong>
-                    <span class="text-zinc-500">Spam korumalı iletişim formunu ve mesaj kutusunu aktif tutar.</span>
+            <label class="flex items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                <div class="text-xs space-y-0.5">
+                    <strong class="block text-sm font-bold text-zinc-900 dark:text-zinc-100">İletişim Sayfası (/contact)</strong>
+                    <span class="text-zinc-500 dark:text-zinc-400">Spam korumalı iletişim formunu ve mesaj kutusunu aktif tutar.</span>
                 </div>
+                <input type="checkbox" name="module_contact" value="1" role="switch" <?= ($settings['module_contact'] ?? '1') === '1' ? 'checked' : '' ?> class="ios-switch shrink-0">
             </label>
         </div>
 
@@ -327,12 +327,12 @@ $activeTab = Request::get('tab', 'general');
             </div>
         </div>
 
-        <label class="flex items-center gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer">
-            <input type="checkbox" name="seo_allow_index" value="1" <?= ($settings['seo_allow_index'] ?? '1') === '1' ? 'checked' : '' ?> class="rounded">
-            <span class="text-xs">
-                <strong class="block font-bold">Arama Motorlarının Siteyi İndekslemesine İzin Ver</strong>
-                <span class="text-zinc-500">Kapatıldığında <code class="font-mono">noindex, nofollow</code> etiketi ve <code class="font-mono">robots.txt</code> engeli uygulanır.</span>
+        <label class="flex items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+            <span class="text-xs space-y-0.5">
+                <strong class="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Arama Motorlarının Siteyi İndekslemesine İzin Ver</strong>
+                <span class="text-zinc-500 dark:text-zinc-400">Kapatıldığında <code class="font-mono">noindex, nofollow</code> etiketi ve <code class="font-mono">robots.txt</code> engeli uygulanır.</span>
             </span>
+            <input type="checkbox" name="seo_allow_index" value="1" role="switch" <?= ($settings['seo_allow_index'] ?? '1') === '1' ? 'checked' : '' ?> class="ios-switch shrink-0">
         </label>
 
         <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs space-y-1.5">
@@ -544,12 +544,12 @@ $activeTab = Request::get('tab', 'general');
         <?= csrf_field() ?>
         <input type="hidden" name="active_tab" value="security">
 
-        <label class="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer">
-            <input type="checkbox" name="maintenance_mode" value="1" <?= ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' ?> class="mt-0.5 rounded">
-            <div class="text-xs">
-                <strong class="block text-sm font-bold">Bakım Modunu Etkinleştir</strong>
-                <span class="text-zinc-500">Aktif edildiğinde ziyaretçiler bakım ekranını görür; yöneticiler siteyi görüntülemeye devam edebilir.</span>
+        <label class="flex items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+            <div class="text-xs space-y-0.5">
+                <strong class="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Bakım Modunu Etkinleştir</strong>
+                <span class="text-zinc-500 dark:text-zinc-400">Aktif edildiğinde ziyaretçiler bakım ekranını görür; yöneticiler siteyi görüntülemeye devam edebilir.</span>
             </div>
+            <input type="checkbox" name="maintenance_mode" value="1" role="switch" <?= ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' ?> class="ios-switch shrink-0">
         </label>
 
         <div>
