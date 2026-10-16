@@ -4,9 +4,10 @@
 # çalıştırabilmesi için derlenmiş /assets dizini repoya DAHİL tutulur.
 # =========================================================================
 
-# Bağımlılıklar (Geliştirici ortamı)
+# Bağımlılıklar & Dağıtım Paketleri
 /node_modules/
 /vendor/
+/dist/
 
 # Kurulum Sihirbazı Tarafından Oluşturulan Yerel Yapılandırma & Kilit Dosyaları
 /config/database.php

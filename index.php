@@ -29,7 +29,10 @@ if (!is_installed()) {
     exit;
 }
 
-// 2. Eklentileri Yükle (Hata korumalı ve otomatik karantina destekli)
+// 2. Sürüm & Veritabanı Otomatik Yükseltme Kontrolü (FTP Güncellemeleri İçin)
+Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.0.0');
+
+// 3. Eklentileri Yükle (Hata korumalı ve otomatik karantina destekli)
 Core\PluginManager::boot();
 Core\Hook::doAction('app_init');
 

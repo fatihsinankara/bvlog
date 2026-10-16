@@ -58,4 +58,9 @@ class Setting extends Model
     {
         self::set($key, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
+
+    public static function clearCache(): void
+    {
+        self::$cache = null;
+    }
 }

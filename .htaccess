@@ -3,8 +3,8 @@
     RewriteBase /
 
     # Hassas sistem dizinlerine ve yapılandırma dosyalarına doğrudan erişimi engelle
-    RewriteRule ^(app|core|config|resources|node_modules|storage/logs)(/.*)?$ - [F,L]
-    RewriteRule ^(schema\.sql|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|\.env)$ - [F,L]
+    RewriteRule ^(app|core|config|resources|node_modules|dist|storage/logs)(/.*)?$ - [F,L]
+    RewriteRule ^(schema\.sql|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|build-release\.php|\.env)$ - [F,L]
 
     # Statik dosyalar (assets, storage/uploads, themes/*/assets) mevcutsa doğrudan sun
     RewriteCond %{REQUEST_FILENAME} -f [OR]

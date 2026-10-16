@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "release": "vite build && php build-release.php"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.6.0",
