@@ -1,0 +1,116 @@
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Modal Dialog Scroll Containment (Modern Web Guidance) */
+dialog:modal {
+    overscroll-behavior: contain;
+    margin: auto;
+}
+
+dialog::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+    background-color: rgba(9, 9, 11, 0.65);
+}
+
+/* Özel Bvlog Editör ve Makale Detay Tipografi Stilleri */
+.bvlog-editor-content,
+.bvlog-article-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.bvlog-editor-content > :first-child,
+.bvlog-article-content > :first-child {
+    margin-top: 0 !important;
+}
+
+.bvlog-editor-content > :last-child,
+.bvlog-article-content > :last-child {
+    margin-bottom: 0 !important;
+}
+
+.bvlog-editor-content p,
+.bvlog-editor-content div,
+.bvlog-article-content p,
+.bvlog-article-content div {
+    margin-top: 0.3rem !important;
+    margin-bottom: 0.3rem !important;
+}
+
+.bvlog-editor-content h2,
+.bvlog-article-content h2 {
+    margin-top: 0.9rem !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.bvlog-editor-content h3,
+.bvlog-article-content h3 {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.bvlog-editor-content ul,
+.bvlog-editor-content ol,
+.bvlog-editor-content blockquote,
+.bvlog-editor-content pre,
+.bvlog-editor-content figure,
+.bvlog-article-content ul,
+.bvlog-article-content ol,
+.bvlog-article-content blockquote,
+.bvlog-article-content pre,
+.bvlog-article-content figure {
+    margin-top: 0.55rem !important;
+    margin-bottom: 0.55rem !important;
+}
+
+.bvlog-editor-content li,
+.bvlog-article-content li {
+    margin-top: 0.15rem !important;
+    margin-bottom: 0.15rem !important;
+}
+
+[contenteditable="true"]:empty:before {
+    content: attr(placeholder);
+    color: #a1a1aa;
+}
+
+.bvlog-editor-content img,
+.bvlog-article-content img {
+    border-radius: 0.5rem;
+    max-width: 100%;
+    height: auto;
+    margin: 0.5rem 0 !important;
+    border: 1px solid #e4e4e7;
+}
+
+.dark .bvlog-editor-content img,
+.dark .bvlog-article-content img {
+    border-color: #27272a;
+}
+
+[contenteditable="true"] pre {
+    background-color: #18181b;
+    color: #f4f4f5;
+    padding: 0.85rem 1rem;
+    border-radius: 0.5rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+}
+
+/* CV Yazdırma / PDF Kaydetme Stilleri */
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+    main {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        max-width: 100% !important;
+    }
+}

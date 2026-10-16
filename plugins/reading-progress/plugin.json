@@ -1,0 +1,8 @@
+{
+  "id": "reading-progress",
+  "name": "Okuma İlerleme Çubuğu",
+  "version": "1.0.0",
+  "author": "Bvlog Çekirdek",
+  "description": "Blog yazılarında sayfanın en üstünde sade ve düz renkli bir okuma ilerleme çubuğu gösterir.",
+  "main": "plugin.php"
+}

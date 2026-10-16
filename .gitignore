@@ -1,0 +1,50 @@
+# =========================================================================
+# Bvlog — Açık Kaynak Dağıtım .gitignore
+# Not: Paylaşımlı hosting kullanıcılarının Node.js kurmadan doğrudan
+# çalıştırabilmesi için derlenmiş /assets dizini repoya DAHİL tutulur.
+# =========================================================================
+
+# Bağımlılıklar (Geliştirici ortamı)
+/node_modules/
+/vendor/
+
+# Kurulum Sihirbazı Tarafından Oluşturulan Yerel Yapılandırma & Kilit Dosyaları
+/config/database.php
+/storage/installed.lock
+/storage/quarantine.json
+
+# Kullanıcı Yüklemeleri, Önbellek ve Loglar (Klasör yapısını .gitkeep ile koru)
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+/storage/cache/*
+!/storage/cache/.gitkeep
+
+# Ortam Değişkenleri
+.env
+.env.*
+!.env.example
+
+# IDE & Editör Dosyaları
+/.idea/
+/.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# İşletim Sistemi & Geçici Dosyalar
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.tmp
+*.bak
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

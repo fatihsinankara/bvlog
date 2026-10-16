@@ -1,0 +1,26 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Hassas sistem dizinlerine ve yapılandırma dosyalarına doğrudan erişimi engelle
+    RewriteRule ^(app|core|config|resources|node_modules|storage/logs)(/.*)?$ - [F,L]
+    RewriteRule ^(schema\.sql|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|\.env)$ - [F,L]
+
+    # Statik dosyalar (assets, storage/uploads, themes/*/assets) mevcutsa doğrudan sun
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Diğer tüm istekleri index.php'ye yönlendir
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Dizin listelemeyi kapat
+Options -Indexes
+
+# Güvenlik Başlıkları
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

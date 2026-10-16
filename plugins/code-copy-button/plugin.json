@@ -1,0 +1,8 @@
+{
+  "id": "code-copy-button",
+  "name": "Kod Bloğu Kopyalama Butonu",
+  "version": "1.0.0",
+  "author": "Bvlog Çekirdek",
+  "description": "Blog yazılarındaki kod bloklarının sağ üst köşesine tek tıkla kopyalama butonu ekler.",
+  "main": "plugin.php"
+}

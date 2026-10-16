@@ -1,0 +1,8 @@
+{
+  "id": "default",
+  "name": "Bvlog Editorial (Varsayılan)",
+  "version": "1.0.0",
+  "author": "Bvlog Çekirdek",
+  "description": "Gradientsiz, saf tipografik, yüksek kontrastlı ve okuma konforu odaklı çekirdek tema.",
+  "supports": ["portfolio", "cv", "dark_mode"]
+}
