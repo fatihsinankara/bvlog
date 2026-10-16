@@ -1,7 +1,31 @@
 <?php
 use Core\View;
 ?>
-<div class="space-y-8">
+<div class="space-y-6">
+    <!-- Yeni Sürüm Güncelleme Bildirimi -->
+    <?php if (!empty($updateInfo['has_update'])): ?>
+        <div class="p-4 rounded-xl border border-amber-300 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+                </div>
+                <div>
+                    <strong class="font-bold block text-zinc-900 dark:text-zinc-100">
+                        Yeni Bvlog Sürümü Mevcut: v<?= e($updateInfo['latest_version']) ?>
+                    </strong>
+                    <span class="text-zinc-600 dark:text-zinc-400">
+                        Yüklü sürümünüz: v<?= e($updateInfo['current_version']) ?>. Yeni özellikleri ve sürüm notlarını inceleyin.
+                    </span>
+                </div>
+            </div>
+            <a href="<?= e(url('/admin/settings?tab=updates')) ?>"
+               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 text-white font-semibold text-xs hover:bg-amber-700 transition-colors shrink-0 self-start sm:self-center">
+                <span>Güncellemeyi İncele</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+    <?php endif; ?>
+
     <?php if (!empty($quarantinedPlugins)): ?>
         <div class="p-4 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200 text-xs flex items-center justify-between gap-4">
             <div>
