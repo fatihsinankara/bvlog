@@ -10,6 +10,7 @@ require_once BVLOG_ROOT . '/core/Helpers.php';
 
 $appConfig = require BVLOG_ROOT . '/config/app.php';
 date_default_timezone_set($appConfig['timezone'] ?? 'Europe/Istanbul');
+Core\ErrorHandler::register((bool) ($appConfig['debug'] ?? false));
 
 Core\Security::sendHeaders();
 Core\Session::start();

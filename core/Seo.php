@@ -80,7 +80,7 @@ class Seo
     public static function buildArticleSchema(array $post, array $author): array
     {
         $siteTitle = setting('site_title', 'Bvlog');
-        $postUrl = url('/blog/' . $post['slug']);
+        $postUrl = post_url($post);
         $image = !empty($post['cover_image']) ? url($post['cover_image']) : '';
 
         $schema = [

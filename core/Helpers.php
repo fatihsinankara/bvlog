@@ -143,7 +143,9 @@ if (!function_exists('slugify')) {
 if (!function_exists('reading_time')) {
     function reading_time(string $content): int
     {
-        $words = str_word_count(strip_tags($content));
+        $clean = strip_tags($content);
+        preg_match_all('/\p{L}+/u', $clean, $matches);
+        $words = !empty($matches[0]) ? count($matches[0]) : str_word_count($clean);
         $minutes = (int) ceil($words / 200);
         $minutes = max(1, $minutes);
         return (int) Hook::applyFilters('reading_time', $minutes, $content);
@@ -151,7 +153,7 @@ if (!function_exists('reading_time')) {
 }
 
 if (!function_exists('format_date')) {
-    function format_date(?string $dateStr, bool $withTime = false): string
+    function format_date(?string $dateStr, bool $withTime = false, ?string $locale = null): string
     {
         if (empty($dateStr)) {
             return '';
@@ -160,16 +162,27 @@ if (!function_exists('format_date')) {
         if (!$ts) {
             return $dateStr;
         }
-        $months = [
+
+        $loc = $locale ?: ($GLOBALS['appConfig']['locale'] ?? 'tr');
+
+        $monthsEn = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+        ];
+
+        $monthsTr = [
             1 => 'Ocak', 2 => 'Şubat', 3 => 'Mart', 4 => 'Nisan',
             5 => 'Mayıs', 6 => 'Haziran', 7 => 'Temmuz', 8 => 'Ağustos',
             9 => 'Eylül', 10 => 'Ekim', 11 => 'Kasım', 12 => 'Aralık',
         ];
+
+        $months = ($loc === 'en') ? $monthsEn : $monthsTr;
         $day = date('j', $ts);
         $month = $months[(int) date('n', $ts)] ?? '';
         $year = date('Y', $ts);
 
-        $formatted = "{$day} {$month} {$year}";
+        $formatted = ($loc === 'en') ? "{$month} {$day}, {$year}" : "{$day} {$month} {$year}";
         if ($withTime) {
             $formatted .= ' ' . date('H:i', $ts);
         }
