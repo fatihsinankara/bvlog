@@ -10,18 +10,7 @@ class HtmlSanitizer
             return '';
         }
 
-        // Tehlikeli script, style, object, embed, applet, meta, form etiketlerini tamamen kaldır
-        $html = preg_replace('/<(script|style|object|applet|form|meta|base|link)\b[^>]*>.*?<\/\1>/is', '', $html);
-        $html = preg_replace('/<(script|style|object|applet|form|meta|base|link)\b[^>]*\/?>/is', '', $html);
-
-        // on* event handler niteliklerini (onload, onerror, onclick vb.) temizle
-        $html = preg_replace('/\s+on[a-z]+\s*=\s*(["\']).*?\1/is', '', $html);
-        $html = preg_replace('/\s+on[a-z]+\s*=\s*[^\s>]+/is', '', $html);
-
-        // javascript: veya data:text/html protokollerini engelle
-        $html = preg_replace('/(href|src)\s*=\s*(["\'])\s*(javascript|vbscript|data):.*?\2/is', '$1="#"', $html);
-
-        // İframe etiketlerinde sadece güvenilir embed kaynaklarına izin ver
+        // 1. İframe etiketlerinde sadece güvenilir embed kaynaklarına izin ver
         $html = preg_replace_callback('/<iframe\b([^>]*)><\/iframe>/is', function ($matches) {
             $attrs = $matches[1];
             if (preg_match('/src\s*=\s*(["\'])(https:\/\/(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|player\.vimeo\.com|open\.spotify\.com|codepen\.io|platform\.twitter\.com)\/[^"\']+)\1/i', $attrs, $srcMatch)) {
@@ -29,6 +18,41 @@ class HtmlSanitizer
                 return '<iframe src="' . $safeSrc . '" class="w-full h-full border-0 rounded-lg" allowfullscreen loading="lazy"></iframe>';
             }
             return '';
+        }, $html);
+
+        // 2. Tehlikeli script, style, object, embed, applet, meta, form, svg, math, template etiketlerini tamamen kaldır
+        $dangerTags = 'script|style|object|embed|applet|form|meta|base|link|svg|math|template|noscript';
+        $dangerPattern = '/<(' . $dangerTags . ')\b[^>]*>.*?<\/\1>/is';
+        while (preg_match($dangerPattern, $html)) {
+            $html = preg_replace($dangerPattern, '', $html);
+        }
+        $html = preg_replace('/<(' . $dangerTags . ')\b[^>]*\/?>/is', '', $html);
+
+        // 3. on* event handler niteliklerini (onload, onerror, onclick vb.) temizle (boşluklu veya bölü işaretli)
+        $onPattern = '/(?:\s|\/)+on[a-z0-9_-]+\s*=\s*(["\']).*?\1/is';
+        while (preg_match($onPattern, $html)) {
+            $html = preg_replace($onPattern, '', $html);
+        }
+        $html = preg_replace('/(?:\s|\/)+on[a-z0-9_-]+\s*=\s*[^\s>]+/is', '', $html);
+
+        // 4. Tehlikeli URL protokollerini (javascript:, vbscript:, data:text/html vb.) denetle
+        $html = preg_replace_callback('/(href|src|xlink:href|action)\s*=\s*(["\'])(.*?)\2/is', function ($matches) {
+            $attr = $matches[1];
+            $quote = $matches[2];
+            $val = trim($matches[3]);
+
+            $decoded = html_entity_decode($val, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $cleanProto = strtolower(preg_replace('/[\x00-\x20\s]+/', '', $decoded));
+
+            if (
+                str_starts_with($cleanProto, 'javascript:') ||
+                str_starts_with($cleanProto, 'vbscript:') ||
+                (str_starts_with($cleanProto, 'data:') && !str_starts_with($cleanProto, 'data:image/'))
+            ) {
+                return $attr . '=' . $quote . '#' . $quote;
+            }
+
+            return $matches[0];
         }, $html);
 
         return self::parseSmartEmbeds($html);

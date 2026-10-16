@@ -17,7 +17,7 @@ class PluginManager
 
     public static function isSafeMode(): bool
     {
-        if (isset($_GET['safe_mode']) && $_GET['safe_mode'] === '1') {
+        if (isset($_GET['safe_mode']) && $_GET['safe_mode'] === '1' && Session::has('admin_user_id')) {
             return true;
         }
         return file_exists(BVLOG_ROOT . '/storage/safe_mode.flag');

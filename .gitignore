@@ -17,12 +17,15 @@
 # Kullanıcı Yüklemeleri, Önbellek ve Loglar (Klasör yapısını .gitkeep ile koru)
 /storage/uploads/*
 !/storage/uploads/.gitkeep
+!/storage/uploads/.htaccess
 
 /storage/logs/*
 !/storage/logs/.gitkeep
+!/storage/logs/.htaccess
 
 /storage/cache/*
 !/storage/cache/.gitkeep
+!/storage/cache/.htaccess
 
 # Ortam Değişkenleri
 .env

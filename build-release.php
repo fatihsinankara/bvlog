@@ -83,9 +83,9 @@ foreach ($iterator as $item) {
         continue;
     }
 
-    // 3. storage/uploads, storage/logs, storage/cache içindeki yerel dosyaları atla (.gitkeep hariç)
+    // 3. storage/uploads, storage/logs, storage/cache içindeki yerel dosyaları atla (.gitkeep ve .htaccess hariç)
     if (preg_match('#^storage/(uploads|logs|cache)/(.+)$#', $relativePath, $matches)) {
-        if ($matches[2] !== '.gitkeep') {
+        if (!in_array($matches[2], ['.gitkeep', '.htaccess'], true)) {
             continue;
         }
     }

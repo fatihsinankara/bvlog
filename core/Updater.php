@@ -102,7 +102,7 @@ class Updater
     {
         $userAgent = 'Bvlog-CMS/' . (setting('db_version', '1.0.0')) . ' (PHP ' . PHP_VERSION . ')';
 
-        // 1. Önce cURL dene
+        // 1. Önce cURL dene (Varsayılan olarak tam SSL doğrulamasıyla)
         if (function_exists('curl_init')) {
             $ch = curl_init(self::API_URL);
             curl_setopt_array($ch, [
@@ -110,12 +110,20 @@ class Updater
                 CURLOPT_USERAGENT      => $userAgent,
                 CURLOPT_TIMEOUT        => 8,
                 CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2,
                 CURLOPT_HTTPHEADER     => [
                     'Accept: application/vnd.github.v3+json',
                 ],
             ]);
             $body = curl_exec($ch);
+            $errno = curl_errno($ch);
+            // Sunucuda SSL CA sertifika paketi eksikse (CURLE_SSL_CACERT 60 / CURLE_SSL_CACERT_BADFILE 77) geri çekilme
+            if ($errno === 60 || $errno === 77) {
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                $body = curl_exec($ch);
+            }
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
@@ -134,8 +142,8 @@ class Updater
                 'timeout' => 8,
             ],
             'ssl' => [
-                'verify_peer'      => false,
-                'verify_peer_name' => false,
+                'verify_peer'      => true,
+                'verify_peer_name' => true,
             ],
         ]);
 
