@@ -11,10 +11,10 @@ class Migrator
      * veritabanı şemasını ve yeni ayar anahtarlarını veri kaybı olmadan
      * otomatik olarak yükseltir.
      */
-    public static function checkAndUpgrade(string $targetVersion): void
+    public static function checkAndUpgrade(string $targetVersion, bool $force = false): void
     {
         $installedVersion = setting('db_version', '0.0.0');
-        if (version_compare($installedVersion, $targetVersion, '>=')) {
+        if (!$force && version_compare($installedVersion, $targetVersion, '>=')) {
             return;
         }
 
