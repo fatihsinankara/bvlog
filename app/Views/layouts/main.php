@@ -95,7 +95,7 @@ $currentPath = Request::path();
 
                 <!-- Mobil Menü Butonu -->
                 <button type="button"
-                        @click="mobileMenu = !mobileMenu"
+                        @click.stop="mobileMenu = !mobileMenu"
                         class="md:hidden w-9 h-9 inline-flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400">
                     <i class="fa-solid fa-bars" x-show="!mobileMenu"></i>
                     <i class="fa-solid fa-xmark" x-show="mobileMenu" style="display: none;"></i>
@@ -104,7 +104,7 @@ $currentPath = Request::path();
         </div>
 
         <!-- Mobil Menü Çekmecesi -->
-        <div x-show="mobileMenu" x-transition class="md:hidden border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-3 space-y-1" style="display: none;">
+        <div x-show="mobileMenu" @click.outside="mobileMenu = false" x-transition class="md:hidden border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-3 space-y-1" style="display: none;">
             <a href="<?= e(url('/')) ?>" class="block px-3 py-2 rounded-lg text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900">Anasayfa</a>
             <a href="<?= e(url('/blog')) ?>" class="block px-3 py-2 rounded-lg text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900">Blog</a>
             <?php if (is_module_active('portfolio')): ?>

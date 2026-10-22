@@ -252,6 +252,16 @@ input[type="checkbox"].ios-switch-sm:checked:active::before {
     overflow-x: auto;
 }
 
+/* Makale Başlık Çapası ve Sabit Menü Boşluğu (TOC & Anchors) */
+.bvlog-article-content h1,
+.bvlog-article-content h2,
+.bvlog-article-content h3,
+.bvlog-article-content h4,
+.bvlog-article-content h5,
+.bvlog-article-content h6 {
+    scroll-margin-top: 5rem;
+}
+
 /* CV Yazdırma / PDF Kaydetme Stilleri */
 @media print {
     @page {

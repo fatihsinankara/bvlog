@@ -36,6 +36,24 @@ class Security
 
     public static function getClientIp(): string
     {
+        // 1. Cloudflare proxy başlığı (CF arkasındaki siteler için en güvenilir gerçek IP)
+        if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+            $ip = trim((string) $_SERVER['HTTP_CF_CONNECTING_IP']);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        // 2. Standart X-Forwarded-For (Ters proxy veya yük dengeleyici arkası)
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $parts = explode(',', (string) $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $first = trim($parts[0]);
+            if (filter_var($first, FILTER_VALIDATE_IP)) {
+                return $first;
+            }
+        }
+
+        // 3. Standart REMOTE_ADDR
         $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '127.0.0.1';
     }
