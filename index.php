@@ -70,6 +70,8 @@ Core\Router::get('/install', [App\Controllers\InstallController::class, 'index']
 // 5. Rotalar — Yönetim Paneli (Admin)
 Core\Router::get('/admin/login', [App\Controllers\Admin\AuthController::class, 'showLogin'], ['guest']);
 Core\Router::post('/admin/login', [App\Controllers\Admin\AuthController::class, 'login'], ['guest']);
+Core\Router::get('/admin/forgot-password', [App\Controllers\Admin\AuthController::class, 'showForgotPassword'], ['guest']);
+Core\Router::post('/admin/forgot-password', [App\Controllers\Admin\AuthController::class, 'sendResetPassword'], ['guest']);
 Core\Router::post('/admin/logout', [App\Controllers\Admin\AuthController::class, 'logout'], ['auth']);
 
 Core\Router::get('/admin', [App\Controllers\Admin\DashboardController::class, 'index'], ['auth']);

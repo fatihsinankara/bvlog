@@ -19,9 +19,17 @@ $siteTitle = setting('site_title', 'Bvlog');
             <p class="text-xs text-zinc-500">Devam etmek için yönetici hesabınızla giriş yapın.</p>
         </div>
 
+        <?php if (Session::hasFlash('success')): ?>
+            <div class="p-3.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-2">
+                <i class="fa-solid fa-circle-check shrink-0"></i>
+                <span><?= e(Session::flash('success')) ?></span>
+            </div>
+        <?php endif; ?>
+
         <?php if (Session::hasFlash('error')): ?>
-            <div class="p-3.5 rounded-lg border border-red-300 bg-red-50 text-red-800 text-xs">
-                <i class="fa-solid fa-circle-exclamation mr-1.5"></i><?= e(Session::flash('error')) ?>
+            <div class="p-3.5 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/60 text-red-900 dark:text-red-200 text-xs flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+                <span><?= e(Session::flash('error')) ?></span>
             </div>
         <?php endif; ?>
 
@@ -35,7 +43,12 @@ $siteTitle = setting('site_title', 'Bvlog');
             </div>
 
             <div>
-                <label class="block text-xs font-semibold mb-1.5">Parola</label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-semibold">Parola</label>
+                    <a href="<?= e(url('/admin/forgot-password')) ?>" class="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                        Parolamı unuttum?
+                    </a>
+                </div>
                 <input type="password" name="password" required
                        class="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 focus:outline-none focus:border-zinc-900">
             </div>
