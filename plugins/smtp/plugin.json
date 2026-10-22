@@ -1,0 +1,8 @@
+{
+  "id": "smtp",
+  "name": "SMTP E-posta Yapılandırması",
+  "version": "1.0.0",
+  "author": "Bvlog Çekirdek",
+  "description": "Özel SMTP sunucusu ile güvenli e-posta gönderimi, bağlantı testi ve canlı sunucu tanılama aracı.",
+  "main": "plugin.php"
+}

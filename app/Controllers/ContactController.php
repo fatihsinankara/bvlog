@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Message;
 use App\Models\User;
 use Core\Controller;
+use Core\Hook;
 use Core\RateLimiter;
 use Core\Request;
 use Core\Security;
@@ -51,14 +52,17 @@ class ContactController extends Controller
 
         RateLimiter::hit($rateKey, 600);
 
-        Message::create([
+        $messageData = [
             'name'       => mb_substr($name, 0, 100),
             'email'      => mb_substr($email, 0, 150),
             'subject'    => mb_substr($subject, 0, 200),
             'message'    => mb_substr(strip_tags($message), 0, 4000),
             'is_read'    => 0,
             'ip_address' => $ip,
-        ]);
+        ];
+
+        $messageId = Message::create($messageData);
+        Hook::doAction('contact_message_received', array_merge($messageData, ['id' => $messageId]));
 
         Session::flash('success', 'Mesajınız başarıyla iletildi! En kısa sürede dönüş yapılacaktır.');
         $this->redirect('/contact');
