@@ -160,6 +160,7 @@ Core\Router::get('/admin/settings', [App\Controllers\Admin\SettingsController::c
 Core\Router::post('/admin/settings', [App\Controllers\Admin\SettingsController::class, 'update'], ['auth']);
 Core\Router::get('/admin/updates/check', [App\Controllers\Admin\SettingsController::class, 'checkUpdates'], ['auth']);
 Core\Router::post('/admin/updates/check', [App\Controllers\Admin\SettingsController::class, 'checkUpdates'], ['auth']);
+Core\Router::post('/admin/updates/apply', [App\Controllers\Admin\SettingsController::class, 'applyUpdate'], ['auth']);
 
 // 6. Dinamik Kalıcı Bağlantı (Permalink) Rotaları
 // Tüm admin ve modül rotalarından sonra en son eşleşecek şekilde kaydedilir

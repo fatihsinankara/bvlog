@@ -461,6 +461,32 @@ $activeTab = Request::get('tab', 'general');
                 </div>
             </div>
 
+            <!-- Sunucu Ortam Uyumluluğu -->
+            <?php if (isset($updateEnv)): ?>
+                <div class="p-3.5 rounded-xl border <?= !empty($updateEnv['ready']) ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40' : 'border-rose-200 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20' ?> flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2">
+                        <i class="<?= !empty($updateEnv['ready']) ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-solid fa-triangle-exclamation text-rose-500' ?>"></i>
+                        <span class="font-medium text-zinc-700 dark:text-zinc-300">
+                            <?= !empty($updateEnv['ready']) ? 'Sunucunuz GitHub OTA (Tek Tıkla) güncelleme için hazır.' : e($updateEnv['error'] ?? 'Sunucu uyumluluk sorunu.') ?>
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-3 text-[11px] text-zinc-500">
+                        <span class="inline-flex items-center gap-1">
+                            <i class="<?= !empty($updateEnv['zip_archive']) ? 'fa-solid fa-check text-emerald-500' : 'fa-solid fa-xmark text-rose-500' ?>"></i>
+                            ZipArchive
+                        </span>
+                        <span class="inline-flex items-center gap-1">
+                            <i class="<?= !empty($updateEnv['download_support']) ? 'fa-solid fa-check text-emerald-500' : 'fa-solid fa-xmark text-rose-500' ?>"></i>
+                            İndirme (cURL)
+                        </span>
+                        <span class="inline-flex items-center gap-1">
+                            <i class="<?= !empty($updateEnv['writable_all']) ? 'fa-solid fa-check text-emerald-500' : 'fa-solid fa-xmark text-rose-500' ?>"></i>
+                            Dizin İzinleri
+                        </span>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Güncelleme Durumu -->
             <?php if (!empty($updateInfo['has_update'])): ?>
                 <div class="p-5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 space-y-4">
@@ -486,13 +512,27 @@ $activeTab = Request::get('tab', 'general');
                     <?php endif; ?>
 
                     <div class="flex flex-wrap items-center gap-2.5 pt-1">
+                        <!-- Tek Tıkla Otomatik Güncelleme -->
+                        <form action="<?= e(url('/admin/updates/apply')) ?>" method="POST"
+                              x-data="{ isSubmitting: false }"
+                              @submit="if (!confirm('Bvlog v<?= e($updateInfo['latest_version']) ?> sürümüne güncellenecektir. Paket GitHub Releases üzerinden otomatik indirilip kurulacaktır.\n\nDevam etmek istiyor musunuz?')) { $event.preventDefault(); return false; } isSubmitting = true;">
+                            <?= csrf_field() ?>
+                            <button type="submit"
+                                    :disabled="isSubmitting"
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm">
+                                <i :class="isSubmitting ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-bolt'"></i>
+                                <span x-text="isSubmitting ? 'Güncelleme İndiriliyor & Kuruluyor...' : 'Şimdi Otomatik Güncelle (GitHub)'"></span>
+                            </button>
+                        </form>
+
                         <?php if (!empty($updateInfo['download_url'])): ?>
                             <a href="<?= e($updateInfo['download_url']) ?>" target="_blank"
-                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 transition-colors shadow-sm">
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
                                 <i class="fa-solid fa-download"></i>
-                                <span>ZIP Paketini İndir</span>
+                                <span>Manuel ZIP İndir</span>
                             </a>
                         <?php endif; ?>
+
                         <a href="<?= e($updateInfo['html_url']) ?>" target="_blank"
                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
                             <i class="fa-brands fa-github"></i>
@@ -505,25 +545,40 @@ $activeTab = Request::get('tab', 'general');
                 <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-2 text-xs">
                     <div class="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
                         <i class="fa-solid fa-circle-question text-zinc-400"></i>
-                        <span>Güncelleme Nasıl Yapılır?</span>
+                        <span>Güncelleme Yöntemleri</span>
                     </div>
-                    <ol class="list-decimal list-inside space-y-1 text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                        <li>Yukarıdaki butondan güncel <strong>bvlog-v<?= e($updateInfo['latest_version']) ?>.zip</strong> dosyasını indirin.</li>
-                        <li>İndirdiğiniz arşivdeki dosyaları FTP veya dosya yöneticisiyle sitenizin kök dizinine mevcut dosyaların üzerine yazacak şekilde yükleyin.</li>
-                        <li>Bvlog otomatik veritabanı yükselticisi (Migrator) sayesinde sitenize ilk girişinizde veritabanı şeması ve yeni ayarlar veri kaybı olmadan otomatik olarak güncellenecektir.</li>
-                    </ol>
+                    <ul class="list-disc list-inside space-y-1 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        <li><strong>Otomatik Güncelleme (Önerilen):</strong> Yeşil butona bastığınızda paket doğrudan GitHub Releases sunucularından indirilir, dosyalar yenilenir ve veritabanı şemanız (Migrator) veri kaybı olmadan otomatik yükseltilir.</li>
+                        <li><strong>Manuel Güncelleme (Alternatif):</strong> Dilerseniz ZIP paketini indirip FTP veya cPanel Dosya Yöneticisi ile kök dizine yükleyebilirsiniz. Veritabanınız siteye ilk girişte yine otomatik güncellenir.</li>
+                    </ul>
                 </div>
             <?php else: ?>
-                <div class="p-5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/20 flex items-center gap-3.5">
-                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-sm">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                    <div class="space-y-0.5 text-xs">
-                        <div class="font-bold text-emerald-900 dark:text-emerald-200 text-sm">Sisteminiz Güncel!</div>
-                        <div class="text-emerald-700 dark:text-emerald-400">
-                            Bvlog'un en son kararlı sürümünü (v<?= e($updateInfo['current_version']) ?>) kullanıyorsunuz. Herhangi bir işlem yapmanıza gerek yoktur.
+                <div class="p-5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-sm">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div class="space-y-0.5 text-xs">
+                            <div class="font-bold text-emerald-900 dark:text-emerald-200 text-sm">Sisteminiz Güncel!</div>
+                            <div class="text-emerald-700 dark:text-emerald-400">
+                                Bvlog'un en son kararlı sürümünü (v<?= e($updateInfo['current_version'] ?? '1.2.0') ?>) kullanıyorsunuz. Herhangi bir işlem yapmanıza gerek yoktur.
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Test Amaçlı Yeniden Kurulum Butonu -->
+                    <form action="<?= e(url('/admin/updates/apply')) ?>" method="POST"
+                          x-data="{ isSubmitting: false }"
+                          @submit="if (!confirm('Mevcut v<?= e($updateInfo['current_version'] ?? '1.2.0') ?> sürümü GitHub Releases üzerinden yeniden indirilip kurulacaktır.\n\nBu işlem güncelleme motorunu test etmek veya sistem dosyalarını onarmak için kullanılır. Verileriniz korunur. Devam etmek istiyor musunuz?')) { $event.preventDefault(); return false; } isSubmitting = true;">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="force" value="1">
+                        <button type="submit"
+                                :disabled="isSubmitting"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 text-[11px] font-semibold hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                            <i :class="isSubmitting ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-arrows-rotate'"></i>
+                            <span x-text="isSubmitting ? 'Yeniden Kuruluyor...' : 'Sürümü Yeniden Kur (Test Et)'"></span>
+                        </button>
+                    </form>
                 </div>
             <?php endif; ?>
 

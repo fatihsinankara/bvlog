@@ -26,12 +26,14 @@ class SettingsController extends Controller
         ]);
 
         $updateInfo = \Core\Updater::check(false);
+        $updateEnv  = \Core\Updater::checkEnvironment();
 
         $this->adminView('admin/settings/index', [
             'settings'   => $settings,
             'author'     => $author,
             'sections'   => $sections,
             'updateInfo' => $updateInfo,
+            'updateEnv'  => $updateEnv,
             'pageTitle'  => 'Site & Modül Ayarları',
         ]);
     }
@@ -155,6 +157,24 @@ class SettingsController extends Controller
             Session::flash('error', $result['error']);
         } else {
             Session::flash('success', 'Tebrikler! Bvlog sisteminiz güncel (v' . $result['current_version'] . ').');
+        }
+
+        $this->redirect('/admin/settings?tab=updates');
+    }
+
+    public function applyUpdate(): void
+    {
+        $force = (bool) Request::input('force', false);
+        $result = \Core\Updater::applyUpdate($force);
+
+        if (Request::isAjax()) {
+            $this->json($result);
+        }
+
+        if (!empty($result['success'])) {
+            Session::flash('success', $result['message'] ?? 'Sistem başarıyla güncellendi.');
+        } else {
+            Session::flash('error', 'Güncelleme başarısız: ' . ($result['error'] ?? 'Bilinmeyen hata oluştu.'));
         }
 
         $this->redirect('/admin/settings?tab=updates');
