@@ -234,6 +234,9 @@ $basePreviewUrl = url(rtrim($slugPrefix, '/')) . '/';
             </div>
         </div>
 
+        <!-- Eklenti Yan Panel Kancası -->
+        <?php \Core\Hook::doAction('admin_post_form_sidebar', $post); ?>
+
         <!-- Öne Çıkan Görsel -->
         <div class="p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-4">
             <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Öne Çıkan Görsel</h3>

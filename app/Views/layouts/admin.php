@@ -2,6 +2,7 @@
 use App\Models\Comment;
 use App\Models\Message;
 use Core\Csrf;
+use Core\Hook;
 use Core\Request;
 use Core\Session;
 use Core\Updater;
@@ -73,6 +74,8 @@ $updateInfo = Updater::check(false);
                 <span>Medya Galerisi</span>
             </a>
 
+            <?php Hook::doAction('admin_sidebar_menu'); ?>
+
             <div class="pt-3 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">Modüller & Etkileşim</div>
 
             <a href="<?= e(url('/admin/portfolio')) ?>"
@@ -132,6 +135,8 @@ $updateInfo = Updater::check(false);
                 <i class="fa-solid fa-plug w-4 text-center"></i>
                 <span>Eklentiler</span>
             </a>
+
+            <?php Hook::doAction('admin_sidebar_system_menu'); ?>
 
             <a href="<?= e(url('/admin/settings')) ?>"
                class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/settings') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">

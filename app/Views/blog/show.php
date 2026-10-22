@@ -47,6 +47,9 @@ use Core\View;
         </figure>
     <?php endif; ?>
 
+    <!-- Makale Öncesi Kanca (Koleksiyon / Seri Kutusu vb.) -->
+    <?php \Core\Hook::doAction('post_before_content', $post); ?>
+
     <!-- Makale Gövdesi -->
     <div class="bvlog-article-content prose prose-zinc dark:prose-invert max-w-none">
         <?= $post['content'] ?>

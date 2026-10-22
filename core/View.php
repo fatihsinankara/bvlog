@@ -42,6 +42,14 @@ class View
             }
         }
 
+        // Eklenti (Plugin) görünümleri doğrudan plugins/ içinden çalışır
+        if (str_starts_with($view, 'plugins/')) {
+            $file = BVLOG_ROOT . "/{$view}.php";
+            if (file_exists($file)) {
+                return self::captureFile($file, $data);
+            }
+        }
+
         $candidates = ThemeManager::resolveViewPath($view);
         foreach ($candidates as $index => $filePath) {
             try {

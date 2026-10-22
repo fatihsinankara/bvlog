@@ -1,0 +1,8 @@
+{
+  "id": "collections",
+  "name": "Yazı Koleksiyonları & Seriler",
+  "version": "1.0.0",
+  "author": "Bvlog Çekirdek",
+  "description": "Aynı konudaki veya birden fazla parçadan oluşan blog yazılarını şık koleksiyonlar ve seriler altında bir araya getirir.",
+  "main": "plugin.php"
+}

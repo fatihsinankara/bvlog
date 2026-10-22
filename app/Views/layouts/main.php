@@ -71,6 +71,7 @@ $currentPath = Request::path();
                         İletişim
                     </a>
                 <?php endif; ?>
+                <?php Core\Hook::doAction('frontend_nav_items'); ?>
             </nav>
 
             <!-- Sağ Aksiyonlar -->
@@ -115,6 +116,7 @@ $currentPath = Request::path();
             <?php if (is_module_active('contact')): ?>
                 <a href="<?= e(url('/contact')) ?>" class="block px-3 py-2 rounded-lg text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900">İletişim</a>
             <?php endif; ?>
+            <?php Core\Hook::doAction('frontend_mobile_nav_items'); ?>
             <?php if (Session::has('admin_user_id')): ?>
                 <a href="<?= e(url('/admin')) ?>" class="block px-3 py-2 rounded-lg text-sm font-semibold text-zinc-900 dark:text-zinc-100 border-t border-zinc-100 dark:border-zinc-800 mt-2 pt-2">
                     <i class="fa-solid fa-sliders mr-1.5"></i>Yönetim Paneli

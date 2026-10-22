@@ -161,7 +161,9 @@ class PostController extends Controller
 
     public function delete(string $id): void
     {
-        Post::deleteById((int) $id);
+        $postId = (int) $id;
+        Post::deleteById($postId);
+        Hook::doAction('post_deleted', $postId);
         Session::flash('success', 'Yazı silindi.');
         $this->redirect('/admin/posts');
     }

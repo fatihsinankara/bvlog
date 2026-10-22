@@ -172,4 +172,30 @@ CREATE TABLE IF NOT EXISTS `messages` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `collections` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(255) NOT NULL,
+    `slug` VARCHAR(255) NOT NULL UNIQUE,
+    `description` TEXT NULL,
+    `icon` VARCHAR(100) DEFAULT 'fa-solid fa-layer-group',
+    `color` VARCHAR(30) DEFAULT '#3b82f6',
+    `cover_image` VARCHAR(255) NULL,
+    `status` ENUM('published', 'draft') DEFAULT 'published',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY `idx_collections_slug` (`slug`),
+    KEY `idx_collections_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `collection_posts` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `collection_id` INT NOT NULL,
+    `post_id` INT NOT NULL,
+    `sort_order` INT DEFAULT 1,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_collection_post` (`collection_id`, `post_id`),
+    KEY `idx_collection_posts_post` (`post_id`),
+    KEY `idx_collection_posts_order` (`collection_id`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
