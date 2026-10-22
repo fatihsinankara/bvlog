@@ -45,7 +45,7 @@ $siteTitle = setting('site_title', 'Bvlog');
             <div>
                 <div class="flex items-center justify-between mb-1.5">
                     <label class="block text-xs font-semibold">Parola</label>
-                    <a href="<?= e(url('/admin/forgot-password')) ?>" class="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                    <a href="<?= e(url('/admin/forgot-password')) ?>" tabindex="-1" class="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-medium">
                         Parolamı unuttum?
                     </a>
                 </div>
@@ -58,8 +58,9 @@ $siteTitle = setting('site_title', 'Bvlog');
             </button>
         </form>
 
-        <div class="text-center">
-            <a href="<?= e(url('/')) ?>" class="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">&larr; Siteye Dön</a>
+        <div class="flex items-center justify-between text-xs text-zinc-500">
+            <a href="<?= e(url('/')) ?>" class="hover:text-zinc-900 dark:hover:text-zinc-200">&larr; Siteye Dön</a>
+            <a href="<?= e(url('/admin/forgot-password')) ?>" class="hover:text-zinc-900 dark:hover:text-zinc-200 font-medium">Parolamı unuttum?</a>
         </div>
     </div>
 
