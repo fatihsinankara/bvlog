@@ -38,6 +38,11 @@ class Request
         return isset($_POST[$key]) ? (is_string($_POST[$key]) ? trim($_POST[$key]) : $_POST[$key]) : $default;
     }
 
+    public static function input(string $key, mixed $default = null): mixed
+    {
+        return self::post($key, self::get($key, $default));
+    }
+
     public static function all(): array
     {
         return array_merge($_GET, $_POST);

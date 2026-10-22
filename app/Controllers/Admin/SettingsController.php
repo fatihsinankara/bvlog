@@ -164,7 +164,7 @@ class SettingsController extends Controller
 
     public function applyUpdate(): void
     {
-        $force = (bool) Request::input('force', false);
+        $force = (bool) (Request::post('force') ?? Request::input('force', false));
         $result = \Core\Updater::applyUpdate($force);
 
         if (Request::isAjax()) {
