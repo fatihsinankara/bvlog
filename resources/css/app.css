@@ -254,13 +254,63 @@ input[type="checkbox"].ios-switch-sm:checked:active::before {
 
 /* CV Yazdırma / PDF Kaydetme Stilleri */
 @media print {
-    body {
+    @page {
+        size: A4 portrait;
+        margin: 12mm 15mm;
+    }
+    *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    html, body {
         background: #ffffff !important;
-        color: #000000 !important;
+        color: #18181b !important;
+        font-size: 10pt !important;
+        line-height: 1.4 !important;
+    }
+    header, footer, nav, .print\:hidden, #bvlog-reading-bar, .bvlog-code-copy-btn, #bvlog-toc-wrapper {
+        display: none !important;
     }
     main {
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
         max-width: 100% !important;
+        width: 100% !important;
+    }
+    /* Karanlık tema sınıflarını temiz beyaz A4 çıktısına uyarla */
+    .dark body, .dark main, .dark div, .dark p, .dark span, .dark h1, .dark h2, .dark h3 {
+        color: #18181b !important;
+        background-color: transparent !important;
+        border-color: #e4e4e7 !important;
+    }
+    /* Başlık ve bölüm kırılma kontrolleri */
+    h1, h2, h3 {
+        break-after: avoid !important;
+        page-break-after: avoid !important;
+        color: #09090b !important;
+    }
+    section, .cv-print-section {
+        break-inside: auto;
+        margin-bottom: 1.25rem !important;
+    }
+    .cv-item, [class*="border-l-2"] {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 0.75rem !important;
+    }
+    /* Bağlantı renkleri */
+    a {
+        color: #18181b !important;
+        text-decoration: none !important;
+    }
+    /* Beceri ilerleme çubukları */
+    .bg-zinc-200 {
+        background-color: #e4e4e7 !important;
+    }
+    .bg-zinc-900, .dark .bg-zinc-100 {
+        background-color: #18181b !important;
+    }
+    .rounded-xl {
+        border-radius: 0.5rem !important;
     }
 }

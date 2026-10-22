@@ -30,10 +30,10 @@ $cvPdf        = $author['cv_pdf'] ?? '';
                         <a href="mailto:<?= e($em) ?>" class="hover:text-zinc-900 dark:hover:text-zinc-100"><i class="fa-regular fa-envelope mr-1"></i><?= e($em) ?></a>
                     <?php endif; ?>
                     <?php if ($gh = setting('social_github')): ?>
-                        <a href="<?= e($gh) ?>" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100"><i class="fa-brands fa-github mr-1"></i>GitHub</a>
+                        <a href="<?= e($gh) ?>" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100"><i class="fa-brands fa-github mr-1"></i><?= e(str_replace('https://github.com/', 'github.com/', $gh)) ?></a>
                     <?php endif; ?>
                     <?php if ($li = setting('social_linkedin')): ?>
-                        <a href="<?= e($li) ?>" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100"><i class="fa-brands fa-linkedin mr-1"></i>LinkedIn</a>
+                        <a href="<?= e($li) ?>" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-900 dark:hover:text-zinc-100"><i class="fa-brands fa-linkedin mr-1"></i><?= e(str_replace(['https://www.linkedin.com/in/', 'https://linkedin.com/in/'], 'linkedin.com/in/', $li)) ?></a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -48,7 +48,7 @@ $cvPdf        = $author['cv_pdf'] ?? '';
                 </a>
             <?php endif; ?>
             <button type="button" onclick="window.print()"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shadow-sm">
                 <i class="fa-solid fa-print"></i>
                 <span>Yazdır / PDF Kaydet</span>
             </button>
@@ -57,7 +57,7 @@ $cvPdf        = $author['cv_pdf'] ?? '';
 
     <!-- Özet Biyografi -->
     <?php if (!empty($authorBio)): ?>
-        <section class="space-y-2">
+        <section class="cv-print-section space-y-2">
             <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Hakkımda</h2>
             <p class="text-sm sm:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed"><?= e($authorBio) ?></p>
         </section>
@@ -65,13 +65,13 @@ $cvPdf        = $author['cv_pdf'] ?? '';
 
     <!-- İş Deneyimleri -->
     <?php if (!empty($experiences)): ?>
-        <section class="space-y-5">
+        <section class="cv-print-section space-y-5">
             <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 pb-2">
                 <i class="fa-solid fa-briefcase mr-1.5"></i>İş Deneyimleri
             </h2>
             <div class="space-y-6">
                 <?php foreach ($experiences as $exp): ?>
-                    <div class="relative pl-5 border-l-2 border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                    <div class="cv-item relative pl-5 border-l-2 border-zinc-200 dark:border-zinc-800 space-y-1.5">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                             <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100">
                                 <?= e($exp['role']) ?>
@@ -95,13 +95,13 @@ $cvPdf        = $author['cv_pdf'] ?? '';
 
     <!-- Eğitim Geçmişi -->
     <?php if (!empty($educations)): ?>
-        <section class="space-y-5">
+        <section class="cv-print-section space-y-5">
             <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 pb-2">
                 <i class="fa-solid fa-graduation-cap mr-1.5"></i>Eğitim
             </h2>
             <div class="space-y-6">
                 <?php foreach ($educations as $edu): ?>
-                    <div class="relative pl-5 border-l-2 border-zinc-200 dark:border-zinc-800 space-y-1">
+                    <div class="cv-item relative pl-5 border-l-2 border-zinc-200 dark:border-zinc-800 space-y-1">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                             <h3 class="text-base font-bold">
                                 <?= e($edu['institution']) ?>
@@ -124,13 +124,13 @@ $cvPdf        = $author['cv_pdf'] ?? '';
 
     <!-- Yetenekler -->
     <?php if (!empty($skillsGrouped)): ?>
-        <section class="space-y-5">
+        <section class="cv-print-section space-y-5">
             <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 pb-2">
                 <i class="fa-solid fa-code mr-1.5"></i>Teknik Yetenekler & Uzmanlıklar
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <?php foreach ($skillsGrouped as $catName => $items): ?>
-                    <div class="p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-900/30 space-y-3">
+                    <div class="cv-item p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-900/30 space-y-3">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500"><?= e($catName) ?></h3>
                         <div class="space-y-2.5">
                             <?php foreach ($items as $sk): ?>
