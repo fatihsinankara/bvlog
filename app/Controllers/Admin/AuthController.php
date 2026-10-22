@@ -30,6 +30,11 @@ class AuthController extends Controller
             $this->redirect('/admin/login');
         }
 
+        if (!captcha_verify('login')) {
+            Session::flash('error', 'Güvenlik doğrulaması (CAPTCHA) başarısız oldu. Lütfen tekrar deneyin.');
+            $this->redirect('/admin/login');
+        }
+
         $identity = Request::post('identity', '');
         $password = Request::post('password', '');
 
@@ -70,6 +75,11 @@ class AuthController extends Controller
         if (RateLimiter::tooManyAttempts($rateKey, 3, 900)) {
             $waitMin = (int) ceil(RateLimiter::availableIn($rateKey, 900) / 60);
             Session::flash('error', "Çok fazla parola sıfırlama denemesi! Lütfen {$waitMin} dakika sonra tekrar deneyin.");
+            $this->redirect('/admin/forgot-password');
+        }
+
+        if (!captcha_verify('forgot_password')) {
+            Session::flash('error', 'Güvenlik doğrulaması (CAPTCHA) başarısız oldu. Lütfen tekrar deneyin.');
             $this->redirect('/admin/forgot-password');
         }
 

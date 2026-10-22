@@ -202,3 +202,10 @@ if (!function_exists('format_bytes')) {
         return $bytes . ' B';
     }
 }
+
+if (!function_exists('captcha_verify')) {
+    function captcha_verify(string $form): bool
+    {
+        return (bool) \Core\Hook::applyFilters('verify_captcha', true, $form);
+    }
+}

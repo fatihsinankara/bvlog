@@ -151,6 +151,11 @@ class BlogController extends Controller
             $this->redirect($postUrl);
         }
 
+        if (!captcha_verify('comment')) {
+            Session::flash('error', 'Güvenlik doğrulaması (CAPTCHA) onaylanmadı veya geçersiz. Lütfen kutucuğu işaretleyin.');
+            $this->redirect($postUrl . '#comments');
+        }
+
         $ip = Security::getClientIp();
         $rateKey = 'comment_' . $ip;
         if (RateLimiter::tooManyAttempts($rateKey, 3, 300)) {

@@ -1,0 +1,8 @@
+{
+  "id": "captcha",
+  "name": "CAPTCHA Güvenlik Koruması",
+  "version": "1.0.0",
+  "author": "Bvlog Çekirdek",
+  "description": "Cloudflare Turnstile ve Google reCAPTCHA v2 desteği ile formları (giriş, iletişim, yorum, parola sıfırlama) bot ve spam saldırılarına karşı korur.",
+  "main": "plugin.php"
+}

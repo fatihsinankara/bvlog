@@ -33,6 +33,11 @@ class ContactController extends Controller
             $this->redirect('/contact');
         }
 
+        if (!captcha_verify('contact')) {
+            Session::flash('error', 'Güvenlik doğrulaması (CAPTCHA) onaylanmadı veya geçersiz. Lütfen kutucuğu işaretleyin.');
+            $this->redirect('/contact');
+        }
+
         $ip = Security::getClientIp();
         $rateKey = 'contact_' . $ip;
         if (RateLimiter::tooManyAttempts($rateKey, 3, 600)) {
