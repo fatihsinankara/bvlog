@@ -179,7 +179,7 @@ class InstallController extends Controller
                 'homepage_post_style' => 'list',
                 'homepage_sections'   => json_encode($defaultSections, JSON_UNESCAPED_UNICODE),
                 'active_theme'        => 'default',
-                'active_plugins'      => json_encode(['reading-progress'], JSON_UNESCAPED_UNICODE),
+                'active_plugins'      => json_encode(['reading-progress', 'code-copy-button', 'table-of-contents'], JSON_UNESCAPED_UNICODE),
                 'quarantined_plugins' => json_encode([], JSON_UNESCAPED_UNICODE),
                 'seo_allow_index'     => '1',
                 'maintenance_mode'    => '0',

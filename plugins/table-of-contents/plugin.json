@@ -1,0 +1,8 @@
+{
+  "id": "table-of-contents",
+  "name": "İçindekiler Tablosu (TOC)",
+  "version": "1.0.0",
+  "author": "Bvlog Çekirdek",
+  "description": "Blog yazılarındaki H2 ve H3 başlıklarını otomatik tarayarak daraltılabilir, şık ve pürüzsüz kaydırmalı bir İçindekiler fihristi oluşturur.",
+  "main": "plugin.php"
+}
