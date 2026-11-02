@@ -188,6 +188,8 @@ class InstallController extends Controller
                 'social_linkedin'     => 'https://linkedin.com',
                 'social_twitter'      => 'https://x.com',
                 'social_email'        => $adminEmail,
+                'cron_token'          => bin2hex(random_bytes(24)),
+                'cron_web_fallback'   => '0',
             ];
 
             $stmtSet = $pdo->prepare('INSERT INTO settings (key_name, value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE value = :v2');
@@ -242,6 +244,11 @@ HTML;
                     'st'      => 'Bvlog ile Yalın ve Güvenli Web Yayıncılığı',
                     'sd'      => 'Paylaşımlı hosting uyumlu, güvenli, hızlı ve minimalist kişisel blog, portfolyo ve CV sistemi.',
                 ]);
+                $samplePostId = (int) $pdo->lastInsertId();
+                if ($samplePostId > 0 && $catId > 0) {
+                    $stmtPostCat = $pdo->prepare('INSERT IGNORE INTO post_categories (post_id, category_id, sort_order) VALUES (?, ?, 1)');
+                    $stmtPostCat->execute([$samplePostId, $catId]);
+                }
             }
 
             // 7. Örnek Portfolyo Projesi

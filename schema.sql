@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `posts` (
     `seo_title` VARCHAR(255) NULL,
     `seo_description` VARCHAR(255) NULL,
     `is_featured` TINYINT(1) DEFAULT 0,
-    `status` ENUM('published', 'draft') DEFAULT 'published',
+    `status` ENUM('published', 'draft', 'scheduled') DEFAULT 'published',
     `views_count` INT DEFAULT 0,
     `published_at` DATETIME NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -85,6 +85,16 @@ CREATE TABLE IF NOT EXISTS `post_tags` (
     PRIMARY KEY (`post_id`, `tag_id`),
     FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `post_categories` (
+    `post_id` INT NOT NULL,
+    `category_id` INT NOT NULL,
+    `sort_order` INT DEFAULT 1,
+    PRIMARY KEY (`post_id`, `category_id`),
+    FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE CASCADE,
+    INDEX `idx_post_categories_cat` (`category_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `comments` (

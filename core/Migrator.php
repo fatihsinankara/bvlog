@@ -83,6 +83,44 @@ class Migrator
                 // Sessizce geç veya logla
             }
         }
+
+        if (version_compare($fromVersion, '1.3.0', '<')) {
+            try {
+                $pdo->exec("ALTER TABLE `posts` MODIFY COLUMN `status` ENUM('published', 'draft', 'scheduled') DEFAULT 'published'");
+            } catch (\Throwable $e) {
+                // Sessizce geç
+            }
+
+            try {
+                $stmtToken = $pdo->prepare("SELECT value FROM settings WHERE key_name = 'cron_token' LIMIT 1");
+                $stmtToken->execute();
+                $existingToken = $stmtToken->fetchColumn();
+                if (empty($existingToken)) {
+                    $newToken = bin2hex(random_bytes(24));
+                    $insToken = $pdo->prepare("INSERT INTO settings (key_name, value) VALUES ('cron_token', :val) ON DUPLICATE KEY UPDATE value = :val2");
+                    $insToken->execute(['val' => $newToken, 'val2' => $newToken]);
+                }
+            } catch (\Throwable $e) {
+                // Sessizce geç
+            }
+
+            try {
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `post_categories` (
+                    `post_id` INT NOT NULL,
+                    `category_id` INT NOT NULL,
+                    `sort_order` INT DEFAULT 1,
+                    PRIMARY KEY (`post_id`, `category_id`),
+                    FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`) ON DELETE CASCADE,
+                    FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE CASCADE,
+                    INDEX `idx_post_categories_cat` (`category_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+                $pdo->exec("INSERT IGNORE INTO `post_categories` (`post_id`, `category_id`, `sort_order`)
+                            SELECT `id`, `category_id`, 1 FROM `posts` WHERE `category_id` IS NOT NULL AND `category_id` > 0");
+            } catch (\Throwable $e) {
+                // Sessizce geç
+            }
+        }
     }
 
     public static function addColumnIfNotExists(\PDO $pdo, string $table, string $column, string $definition): void
