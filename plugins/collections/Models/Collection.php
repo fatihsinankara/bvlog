@@ -129,22 +129,39 @@ class Collection
      */
     public static function getCollectionForPost(int $postId): ?array
     {
+        if (class_exists('\\Core\\Cache') && \Core\Cache::isEnabled()) {
+            $cacheKey = "blog:post_series:{$postId}";
+            $cached = \Core\Cache::get($cacheKey, null, 'blog');
+            if (is_array($cached) && array_key_exists('has_series', $cached)) {
+                return $cached['has_series'] ? $cached['data'] : null;
+            }
+        }
+
         $pivot = Database::fetchOne(
             "SELECT collection_id, sort_order FROM collection_posts WHERE post_id = :pid LIMIT 1",
             ['pid' => $postId]
         );
 
         if (!$pivot) {
+            if (class_exists('\\Core\\Cache') && \Core\Cache::isEnabled()) {
+                \Core\Cache::put("blog:post_series:{$postId}", ['has_series' => false, 'data' => null], null, 'blog', "Yazı Koleksiyon Bağı (#{$postId})");
+            }
             return null;
         }
 
         $collection = self::find((int) $pivot['collection_id']);
         if (!$collection || $collection['status'] !== 'published') {
+            if (class_exists('\\Core\\Cache') && \Core\Cache::isEnabled()) {
+                \Core\Cache::put("blog:post_series:{$postId}", ['has_series' => false, 'data' => null], null, 'blog', "Yazı Koleksiyon Bağı (#{$postId})");
+            }
             return null;
         }
 
         $allPosts = self::getPosts((int) $collection['id'], true);
         if (empty($allPosts)) {
+            if (class_exists('\\Core\\Cache') && \Core\Cache::isEnabled()) {
+                \Core\Cache::put("blog:post_series:{$postId}", ['has_series' => false, 'data' => null], null, 'blog', "Yazı Koleksiyon Bağı (#{$postId})");
+            }
             return null;
         }
 
@@ -161,7 +178,7 @@ class Collection
             }
         }
 
-        return [
+        $result = [
             'collection'    => $collection,
             'posts'         => $allPosts,
             'total_parts'   => count($allPosts),
@@ -169,5 +186,11 @@ class Collection
             'prev_post'     => $prevPost,
             'next_post'     => $nextPost,
         ];
+
+        if (class_exists('\\Core\\Cache') && \Core\Cache::isEnabled()) {
+            \Core\Cache::put("blog:post_series:{$postId}", ['has_series' => true, 'data' => $result], null, 'blog', "Yazı Koleksiyon Serisi (#{$postId})");
+        }
+
+        return $result;
     }
 }

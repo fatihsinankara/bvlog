@@ -83,7 +83,9 @@ class Database
         );
 
         self::query($sql, $data);
-        return (int) self::getInstance()->lastInsertId();
+        $lastId = (int) self::getInstance()->lastInsertId();
+        Cache::invalidateByTable($table);
+        return $lastId;
     }
 
     public static function update(string $table, array $data, string $where, array $whereParams = []): int
@@ -103,12 +105,16 @@ class Database
         );
 
         $stmt = self::query($sql, array_merge($params, $whereParams));
-        return $stmt->rowCount();
+        $affected = $stmt->rowCount();
+        Cache::invalidateByTable($table);
+        return $affected;
     }
 
     public static function delete(string $table, string $where, array $params = []): int
     {
         $sql = sprintf('DELETE FROM `%s` WHERE %s', $table, $where);
-        return self::query($sql, $params)->rowCount();
+        $affected = self::query($sql, $params)->rowCount();
+        Cache::invalidateByTable($table);
+        return $affected;
     }
 }

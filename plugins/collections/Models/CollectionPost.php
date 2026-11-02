@@ -43,6 +43,9 @@ class CollectionPost
     public static function removePost(int $postId): void
     {
         Database::query("DELETE FROM `" . static::$table . "` WHERE post_id = :pid", ['pid' => $postId]);
+        if (class_exists('\\Core\\Cache')) {
+            \Core\Cache::invalidateByTable(static::$table);
+        }
     }
 
     public static function getNextOrder(int $collectionId): int
@@ -97,6 +100,10 @@ class CollectionPost
                     'ord_up' => $order,
                 ]
             );
+        }
+
+        if (class_exists('\\Core\\Cache')) {
+            \Core\Cache::invalidateByTable(static::$table);
         }
     }
 }

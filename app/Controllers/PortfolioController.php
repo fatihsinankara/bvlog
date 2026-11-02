@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Project;
+use Core\Cache;
 use Core\Controller;
 use Core\Router;
 
@@ -10,7 +11,10 @@ class PortfolioController extends Controller
 {
     public function index(): void
     {
-        $projects = Project::publishedList();
+        $projects = Cache::remember('portfolio:list', function (): array {
+            return Project::publishedList();
+        }, null, 'portfolio', 'Portfolyo Proje Listesi');
+
         $this->view('portfolio/index', [
             'projects' => $projects,
             'meta'     => [
@@ -22,8 +26,15 @@ class PortfolioController extends Controller
 
     public function show(string $slug): void
     {
-        $project = Project::findBySlug($slug);
-        if (!$project || $project['status'] !== 'published') {
+        $project = Cache::remember("portfolio:project:{$slug}", function () use ($slug): ?array {
+            $proj = Project::findBySlug($slug);
+            if (!$proj || $proj['status'] !== 'published') {
+                return null;
+            }
+            return $proj;
+        }, null, 'portfolio', "Proje Detayı: {$slug}");
+
+        if (!$project) {
             Router::abort(404, 'Proje bulunamadı.');
         }
 

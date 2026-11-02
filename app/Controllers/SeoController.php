@@ -6,12 +6,39 @@ use App\Models\Category;
 use App\Models\Post;
 use App\Models\Project;
 use App\Models\Setting;
+use Core\Cache;
 use Core\Controller;
 use Core\Response;
 
 class SeoController extends Controller
 {
     public function sitemap(): void
+    {
+        if (Cache::isFeedsEnabled()) {
+            $xml = Cache::remember('feeds:sitemap_xml', function (): string {
+                return self::generateSitemapXml();
+            }, null, 'feeds', 'XML Site Haritası (/sitemap.xml)');
+        } else {
+            $xml = self::generateSitemapXml();
+        }
+
+        Response::xml($xml);
+    }
+
+    public function rss(): void
+    {
+        if (Cache::isFeedsEnabled()) {
+            $xml = Cache::remember('feeds:rss_xml', function (): string {
+                return self::generateRssXml();
+            }, null, 'feeds', 'RSS İçerik Beslemesi (/rss.xml)');
+        } else {
+            $xml = self::generateRssXml();
+        }
+
+        Response::xml($xml);
+    }
+
+    public static function generateSitemapXml(): string
     {
         $urls = [];
         $urls[] = ['loc' => url('/'), 'priority' => '1.0', 'changefreq' => 'daily', 'lastmod' => date('Y-m-d')];
@@ -67,10 +94,10 @@ class SeoController extends Controller
         }
         $xml .= '</urlset>';
 
-        Response::xml($xml);
+        return $xml;
     }
 
-    public function rss(): void
+    public static function generateRssXml(): string
     {
         $siteTitle = Setting::get('site_title', 'Bvlog');
         $siteDesc = Setting::get('site_description', 'Minimalist Kişisel Blog');
@@ -100,7 +127,8 @@ class SeoController extends Controller
         }
 
         $xml .= "  </channel>\n</rss>";
-        Response::xml($xml);
+
+        return $xml;
     }
 
     public function robots(): void

@@ -208,4 +208,38 @@ CREATE TABLE IF NOT EXISTS `collection_posts` (
     KEY `idx_collection_posts_order` (`collection_id`, `sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `newsletter_subscribers` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `email` VARCHAR(190) NOT NULL UNIQUE,
+    `name` VARCHAR(120) NULL,
+    `status` ENUM('active', 'pending', 'unsubscribed') DEFAULT 'active',
+    `verify_token` VARCHAR(64) NOT NULL,
+    `unsubscribe_token` VARCHAR(64) NOT NULL,
+    `consent_approved` TINYINT(1) DEFAULT 1,
+    `consent_at` DATETIME NULL,
+    `consent_ip` VARCHAR(45) NULL,
+    `consent_text_hash` VARCHAR(64) NULL,
+    `verified_at` DATETIME NULL,
+    `verified_ip` VARCHAR(45) NULL,
+    `unsubscribed_at` DATETIME NULL,
+    `unsubscribed_ip` VARCHAR(45) NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY `idx_newsletter_status` (`status`),
+    KEY `idx_newsletter_unsub_token` (`unsubscribe_token`),
+    KEY `idx_newsletter_verify_token` (`verify_token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `newsletter_campaigns` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `subject` VARCHAR(255) NOT NULL,
+    `content_html` LONGTEXT NOT NULL,
+    `recipient_scope` VARCHAR(50) DEFAULT 'all_active',
+    `total_recipients` INT DEFAULT 0,
+    `sent_count` INT DEFAULT 0,
+    `failed_count` INT DEFAULT 0,
+    `last_error` TEXT NULL,
+    `sent_at` DATETIME NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
