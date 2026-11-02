@@ -144,6 +144,8 @@ $currentPath = Request::path();
         <?= $content ?? '' ?>
     </main>
 
+    <?php Hook::doAction('before_footer'); ?>
+
     <!-- Altbilgi (Footer) -->
     <footer class="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 print:hidden">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 dark:text-zinc-400">

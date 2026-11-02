@@ -9,10 +9,16 @@ class SmtpClient
     private array $config;
     private array $log = [];
     private float $startTime = 0.0;
+    private string $lastError = '';
 
     public function __construct(?array $config = null)
     {
         $this->config = $config ?: self::getDefaultConfig();
+    }
+
+    public function getLastError(): string
+    {
+        return $this->lastError;
     }
 
     public static function getDefaultConfig(): array
@@ -131,10 +137,12 @@ HTML;
 
         try {
             $this->log = [];
+            $this->lastError = '';
             $this->startTime = microtime(true);
             $this->executeSmtp($recipients, $subject, $htmlBody, $options);
             return true;
         } catch (\Throwable $e) {
+            $this->lastError = $e->getMessage();
             error_log("Bvlog SMTP Error: " . $e->getMessage());
             return false;
         }
@@ -153,8 +161,12 @@ HTML;
             'Content-type: text/html; charset=UTF-8',
             'From: ' . $this->encodeHeader($fromName) . ' <' . $fromEmail . '>',
             'Reply-To: ' . ($options['reply_to'] ?? $fromEmail),
-            'X-Mailer: Bvlog/' . setting('app_version', '1.2.3'),
+            'X-Mailer: Bvlog/' . setting('app_version', '1.3.1'),
         ];
+        if (!empty($options['unsubscribe_url'])) {
+            $headers[] = 'List-Unsubscribe: <' . $options['unsubscribe_url'] . '>';
+            $headers[] = 'List-Unsubscribe-Post: List-Unsubscribe=One-Click';
+        }
 
         $encodedSubject = $this->encodeHeader($subject);
         $toStr = implode(', ', $recipients);
@@ -296,7 +308,11 @@ HTML;
             $headers[] = 'Subject: ' . $this->encodeHeader($subject);
             $headers[] = 'Message-ID: ' . $msgId;
             $headers[] = 'MIME-Version: 1.0';
-            $headers[] = 'X-Mailer: Bvlog SMTP Client/1.2.3';
+            $headers[] = 'X-Mailer: Bvlog SMTP Client/1.3.1';
+            if (!empty($options['unsubscribe_url'])) {
+                $headers[] = 'List-Unsubscribe: <' . $options['unsubscribe_url'] . '>';
+                $headers[] = 'List-Unsubscribe-Post: List-Unsubscribe=One-Click';
+            }
             $headers[] = 'Content-Type: text/html; charset=UTF-8';
             $headers[] = 'Content-Transfer-Encoding: 8bit';
 

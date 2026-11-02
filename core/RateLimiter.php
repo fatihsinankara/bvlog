@@ -114,4 +114,14 @@ class RateLimiter
         $remaining = ($data[$key]['first_attempt'] + $decaySeconds) - time();
         return max(0, $remaining);
     }
+
+    public static function check(string $action, string $ip, int $maxAttempts = 5, int $decaySeconds = 900): bool
+    {
+        $key = $action . ':' . $ip;
+        if (self::tooManyAttempts($key, $maxAttempts, $decaySeconds)) {
+            return false;
+        }
+        self::hit($key, $decaySeconds);
+        return true;
+    }
 }

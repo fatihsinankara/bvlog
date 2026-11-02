@@ -52,4 +52,9 @@ class Request
     {
         return $_FILES[$key] ?? null;
     }
+
+    public static function ip(): string
+    {
+        return Security::getClientIp();
+    }
 }

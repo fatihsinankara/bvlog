@@ -23,6 +23,15 @@ class PluginManager
         return file_exists(BVLOG_ROOT . '/storage/safe_mode.flag');
     }
 
+    public static function isActive(string $pluginId): bool
+    {
+        if (!is_installed() || self::isSafeMode()) {
+            return false;
+        }
+        $active = Setting::getJson('active_plugins', []);
+        return is_array($active) && in_array($pluginId, $active, true);
+    }
+
     public static function boot(): void
     {
         if (!is_installed() || self::isSafeMode()) {
