@@ -7,7 +7,19 @@ use Core\View;
         <div class="flex flex-wrap items-center gap-2.5 text-xs text-zinc-500">
             <a href="<?= e(url('/blog')) ?>" class="hover:text-zinc-900 dark:hover:text-zinc-100 font-medium">&larr; Blog</a>
             <span>&middot;</span>
-            <?php if (!empty($post['category_name'])): ?>
+            <?php if (!empty($post['categories'])): ?>
+                <div class="inline-flex flex-wrap items-center gap-1.5">
+                    <?php foreach ($post['categories'] as $pCat): ?>
+                        <?= View::renderPartial('components/category-badge', [
+                            'name'  => $pCat['name'],
+                            'slug'  => $pCat['slug'],
+                            'icon'  => $pCat['icon'] ?? '',
+                            'color' => $pCat['color'] ?? '#18181b',
+                        ]) ?>
+                    <?php endforeach; ?>
+                </div>
+                <span>&middot;</span>
+            <?php elseif (!empty($post['category_name'])): ?>
                 <?= View::renderPartial('components/category-badge', [
                     'name'  => $post['category_name'],
                     'slug'  => $post['category_slug'],

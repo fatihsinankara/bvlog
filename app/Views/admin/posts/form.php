@@ -20,10 +20,13 @@ $basePreviewUrl = url(rtrim($slugPrefix, '/')) . '/';
           seoTitle: <?= e(json_encode($post['seo_title'] ?? '')) ?>,
           seoDesc: <?= e(json_encode($post['seo_description'] ?? '')) ?>,
           coverImage: <?= e(json_encode($post['cover_image'] ?? '')) ?>,
+          status: <?= e(json_encode($post['status'] ?? 'published')) ?>,
+          publishedAt: <?= e(json_encode(!empty($post['published_at']) ? date('Y-m-d\TH:i', strtotime((string) $post['published_at'])) : '')) ?>,
+          selectedCategories: <?= e(json_encode(array_values(array_map('intval', $selectedCategoryIds ?? (!empty($post['category_id']) ? [(int) $post['category_id']] : []))))) ?>,
           siteTitle: <?= e(json_encode(setting('site_title', 'Bvlog'))) ?>,
           baseUrl: <?= e(json_encode($basePreviewUrl)) ?>
       })"
-      @submit="syncEditorContent()"
+      @submit="if (!validateBeforeSubmit($event)) return false;"
       class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
     <?= csrf_field() ?>
 
@@ -198,22 +201,85 @@ $basePreviewUrl = url(rtrim($slugPrefix, '/')) . '/';
 
             <div>
                 <label class="block text-xs font-semibold mb-1.5">Durum</label>
-                <select name="status" class="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none">
+                <select name="status" x-model="status" @change="onStatusChange()" class="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none">
                     <option value="published" <?= ($post['status'] ?? 'published') === 'published' ? 'selected' : '' ?>>Yayında (Herkese Açık)</option>
+                    <option value="scheduled" <?= ($post['status'] ?? '') === 'scheduled' ? 'selected' : '' ?>>Zamanlanmış (İleri Tarihli)</option>
                     <option value="draft" <?= ($post['status'] ?? '') === 'draft' ? 'selected' : '' ?>>Taslak (Gizli)</option>
                 </select>
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold mb-1.5">Kategori</label>
-                <select name="category_id" class="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none">
-                    <option value="0">— Kategori Seçin —</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?= (int) $cat['id'] ?>" <?= (int) ($post['category_id'] ?? 0) === (int) $cat['id'] ? 'selected' : '' ?>>
-                            <?= e($cat['name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <label class="block text-xs font-semibold">Yayın Tarihi & Saati</label>
+                    <button type="button" x-show="publishedAt !== ''" @click="publishedAt = ''; if (status === 'scheduled') status = 'published';"
+                            class="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 underline">
+                        Şimdiye Sıfırla
+                    </button>
+                </div>
+                <input type="datetime-local" name="published_at" x-model="publishedAt" @change="onDateChange()"
+                       :required="status === 'scheduled'"
+                       class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:border-zinc-500">
+                <p x-show="status !== 'scheduled' && !publishedAt" class="text-[11px] text-zinc-400">
+                    Boş bırakılırsa kaydedildiği anın tarihi kullanılır. İleri bir tarih seçerseniz yazı otomatik zamanlanır.
+                </p>
+                <div x-show="status === 'scheduled'" style="display: none;"
+                     class="p-2.5 rounded-lg border border-amber-200 dark:border-amber-800/70 bg-amber-50/70 dark:bg-amber-950/30 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <i class="fa-regular fa-clock mt-0.5 shrink-0"></i>
+                    <span>Bu yazı seçilen tarih ve saat geldiğinde <strong>Cron</strong> görevi tarafından otomatik olarak yayına alınacaktır.</span>
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <label class="block text-xs font-semibold">
+                        Kategoriler *
+                        <span class="text-[10px] font-normal text-zinc-400">(Çoklu seçilebilir)</span>
+                    </label>
+                    <span class="text-[11px] font-semibold"
+                          :class="selectedCategories.length > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'"
+                          x-text="selectedCategories.length > 0 ? (selectedCategories.length + ' kategori seçildi') : 'En az 1 seçin'"></span>
+                </div>
+
+                <?php if (empty($categories)): ?>
+                    <div class="p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/30 text-xs text-amber-800 dark:text-amber-300">
+                        Henüz kategori bulunmuyor. <a href="<?= e(url('/admin/categories/create')) ?>" class="font-bold underline">Önce kategori ekleyin &rarr;</a>
+                    </div>
+                <?php else: ?>
+                    <div :class="categoryError && selectedCategories.length === 0 ? 'border-red-500 ring-1 ring-red-500' : 'border-zinc-200 dark:border-zinc-800'"
+                         class="max-h-48 overflow-y-auto rounded-lg border bg-zinc-50 dark:bg-zinc-950 p-1.5 space-y-1 divide-y divide-zinc-100 dark:divide-zinc-900">
+                        <?php foreach ($categories as $cat): ?>
+                            <?php $catId = (int) $cat['id']; ?>
+                            <label class="flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-md cursor-pointer transition-colors hover:bg-white dark:hover:bg-zinc-900 select-none"
+                                   :class="selectedCategories.includes(<?= $catId ?>) ? 'bg-white dark:bg-zinc-900 shadow-2xs' : ''">
+                                <span class="flex items-center gap-2.5 min-w-0">
+                                    <input type="checkbox"
+                                           name="category_ids[]"
+                                           :value="<?= $catId ?>"
+                                           value="<?= $catId ?>"
+                                           x-model.number="selectedCategories"
+                                           @change="categoryError = false"
+                                           <?= in_array($catId, $selectedCategoryIds ?? [], true) ? 'checked' : '' ?>
+                                           class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-zinc-500 shrink-0">
+                                    <i class="<?= e($cat['icon'] ?: 'fa-solid fa-folder') ?> text-xs shrink-0"
+                                       style="color: <?= e($cat['color'] ?? '#18181b') ?>;"></i>
+                                    <span class="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate"><?= e($cat['name']) ?></span>
+                                </span>
+                                <span x-show="selectedCategories[0] === <?= $catId ?>"
+                                      style="display: none;"
+                                      class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 shrink-0">
+                                    Ana
+                                </span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <p x-show="categoryError && selectedCategories.length === 0"
+                   style="display: none;"
+                   class="text-[11px] font-semibold text-red-600 dark:text-red-400 flex items-center gap-1 pt-0.5">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>Lütfen listeden en az 1 kategori seçin.</span>
+                </p>
             </div>
 
             <label class="flex items-center justify-between gap-3 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition-colors">
@@ -226,7 +292,8 @@ $basePreviewUrl = url(rtrim($slugPrefix, '/')) . '/';
 
             <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
                 <button type="submit" class="flex-1 py-2.5 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-semibold hover:opacity-90 transition-opacity">
-                    <i class="fa-solid fa-floppy-disk mr-1.5"></i><?= $isEdit ? 'Değişiklikleri Kaydet' : 'Yazıyı Yayınla' ?>
+                    <i :class="status === 'scheduled' ? 'fa-regular fa-clock mr-1.5' : 'fa-solid fa-floppy-disk mr-1.5'" class="fa-solid fa-floppy-disk mr-1.5"></i>
+                    <span x-text="status === 'scheduled' ? 'Yazıyı Zamanla' : (status === 'draft' ? 'Taslağı Kaydet' : <?= e(json_encode($isEdit ? 'Değişiklikleri Kaydet' : 'Yazıyı Yayınla')) ?>)"><?= $isEdit ? 'Değişiklikleri Kaydet' : 'Yazıyı Yayınla' ?></span>
                 </button>
                 <a href="<?= e(url('/admin/posts')) ?>" class="px-3.5 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800">
                     İptal

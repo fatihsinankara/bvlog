@@ -109,7 +109,26 @@ class CategoryController extends Controller
 
     public function delete(string $id): void
     {
-        Category::deleteById((int) $id);
+        $catId = (int) $id;
+        Category::deleteById($catId);
+
+        // Ana kategorisi silinen yazılarda varsa diğer seçili kategoriyi ana kategoriye terfi ettir
+        try {
+            \Core\Database::query(
+                'UPDATE posts p
+                 SET p.category_id = (
+                     SELECT pc.category_id
+                     FROM post_categories pc
+                     WHERE pc.post_id = p.id
+                     ORDER BY pc.sort_order ASC
+                     LIMIT 1
+                 )
+                 WHERE p.category_id IS NULL'
+            );
+        } catch (\Throwable $e) {
+            // Sessizce geç
+        }
+
         Session::flash('success', 'Kategori silindi.');
         $this->redirect('/admin/categories');
     }

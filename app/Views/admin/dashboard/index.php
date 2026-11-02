@@ -44,6 +44,11 @@ use Core\View;
                 <i class="fa-solid fa-pen-nib"></i>
             </div>
             <div class="text-2xl font-bold"><?= (int) $stats['posts_published'] ?> <span class="text-xs font-normal text-zinc-400">/ <?= (int) $stats['posts_total'] ?></span></div>
+            <?php if (!empty($stats['posts_scheduled'])): ?>
+                <div class="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1">
+                    <i class="fa-regular fa-clock mr-1"></i><?= (int) $stats['posts_scheduled'] ?> zamanlanmış yazı bekliyor
+                </div>
+            <?php endif; ?>
         </div>
 
         <div class="p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
@@ -125,7 +130,10 @@ use Core\View;
                                     <span><?= e(format_date($p['created_at'])) ?></span>
                                     <span>&middot;</span>
                                     <span><?= (int) $p['views_count'] ?> okunma</span>
-                                    <?php if (!empty($p['category_name'])): ?>
+                                    <?php if (!empty($p['categories'])): ?>
+                                        <span>&middot;</span>
+                                        <span><?= e(implode(', ', array_column($p['categories'], 'name'))) ?></span>
+                                    <?php elseif (!empty($p['category_name'])): ?>
                                         <span>&middot;</span>
                                         <span><?= e($p['category_name']) ?></span>
                                     <?php endif; ?>
@@ -134,6 +142,11 @@ use Core\View;
                             <div class="flex items-center gap-2 shrink-0">
                                 <?php if ($p['status'] === 'published'): ?>
                                     <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-medium">Yayında</span>
+                                <?php elseif ($p['status'] === 'scheduled'): ?>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-medium" title="<?= e(format_date($p['published_at'], true)) ?>">
+                                        <i class="fa-regular fa-clock text-[10px]"></i>
+                                        <span>Zamanlanmış</span>
+                                    </span>
                                 <?php else: ?>
                                     <span class="px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 font-medium">Taslak</span>
                                 <?php endif; ?>

@@ -160,6 +160,10 @@ window.bvlogPostEditor = function (init) {
         seoTitle: init.seoTitle || '',
         seoDesc: init.seoDesc || '',
         coverImage: init.coverImage || '',
+        status: init.status || 'published',
+        publishedAt: init.publishedAt || '',
+        selectedCategories: Array.isArray(init.selectedCategories) ? init.selectedCategories.map(Number) : [],
+        categoryError: false,
         siteTitle: init.siteTitle || 'Bvlog',
         baseUrl: init.baseUrl || '/blog/',
         sourceMode: false,
@@ -170,6 +174,36 @@ window.bvlogPostEditor = function (init) {
         autoSlug() {
             if (!this.slugEdited) {
                 this.slug = turkishSlugify(this.title);
+            }
+        },
+
+        onStatusChange() {
+            if (this.status === 'scheduled') {
+                const now = new Date();
+                const currentVal = this.publishedAt ? new Date(this.publishedAt) : null;
+                if (!currentVal || isNaN(currentVal.getTime()) || currentVal.getTime() <= now.getTime()) {
+                    const future = new Date(now.getTime() + 3600 * 1000);
+                    const pad = (n) => String(n).padStart(2, '0');
+                    this.publishedAt = `${future.getFullYear()}-${pad(future.getMonth() + 1)}-${pad(future.getDate())}T${pad(future.getHours())}:${pad(future.getMinutes())}`;
+                }
+            } else if (this.status === 'published' && this.publishedAt) {
+                const currentVal = new Date(this.publishedAt);
+                if (!isNaN(currentVal.getTime()) && currentVal.getTime() > Date.now() + 60000) {
+                    this.publishedAt = '';
+                }
+            }
+        },
+
+        onDateChange() {
+            if (!this.publishedAt) {
+                if (this.status === 'scheduled') {
+                    this.status = 'published';
+                }
+                return;
+            }
+            const selected = new Date(this.publishedAt);
+            if (!isNaN(selected.getTime()) && selected.getTime() > Date.now() + 60000 && this.status === 'published') {
+                this.status = 'scheduled';
             }
         },
 
@@ -433,6 +467,19 @@ window.bvlogPostEditor = function (init) {
             if (!this.sourceMode && this.$refs.wysiwyg && this.$refs.rawHtml) {
                 this.$refs.rawHtml.value = this.$refs.wysiwyg.innerHTML.trim();
             }
+        },
+
+        validateBeforeSubmit(event) {
+            this.syncEditorContent();
+            if (!this.selectedCategories || this.selectedCategories.length === 0) {
+                this.categoryError = true;
+                if (event) {
+                    event.preventDefault();
+                }
+                return false;
+            }
+            this.categoryError = false;
+            return true;
         }
     };
 };

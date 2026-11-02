@@ -19,6 +19,7 @@ class DashboardController extends Controller
         $stats = [
             'posts_total'     => Post::count(),
             'posts_published' => Post::count('status = "published"'),
+            'posts_scheduled' => Post::countScheduled(),
             'views_total'     => (int) Database::fetchColumn('SELECT COALESCE(SUM(views_count), 0) FROM posts'),
             'categories'      => Category::count(),
             'projects'        => Project::count(),

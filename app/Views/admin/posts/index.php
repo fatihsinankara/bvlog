@@ -1,13 +1,49 @@
 <?php
 use Core\View;
+
+$countAll = count($posts);
+$countPublished = 0;
+$countScheduled = 0;
+$countDraft = 0;
+foreach ($posts as $item) {
+    if (($item['status'] ?? '') === 'published') {
+        $countPublished++;
+    } elseif (($item['status'] ?? '') === 'scheduled') {
+        $countScheduled++;
+    } else {
+        $countDraft++;
+    }
+}
 ?>
-<div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <div>
-            <p class="text-xs text-zinc-500">Toplam <?= count($posts) ?> blog yazısı kayıtlı.</p>
+<div class="space-y-6" x-data="{ filterStatus: 'all' }">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <!-- Durum Filtre Sekmeleri -->
+        <div class="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+            <button type="button" @click="filterStatus = 'all'"
+                    :class="filterStatus === 'all' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'"
+                    class="px-3 py-1.5 rounded-lg transition-colors">
+                Tümü (<?= $countAll ?>)
+            </button>
+            <button type="button" @click="filterStatus = 'published'"
+                    :class="filterStatus === 'published' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'"
+                    class="px-3 py-1.5 rounded-lg transition-colors">
+                Yayında (<?= $countPublished ?>)
+            </button>
+            <button type="button" @click="filterStatus = 'scheduled'"
+                    :class="filterStatus === 'scheduled' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'"
+                    class="px-3 py-1.5 rounded-lg transition-colors inline-flex items-center gap-1.5">
+                <i class="fa-regular fa-clock text-[11px]"></i>
+                <span>Zamanlanmış (<?= $countScheduled ?>)</span>
+            </button>
+            <button type="button" @click="filterStatus = 'draft'"
+                    :class="filterStatus === 'draft' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'"
+                    class="px-3 py-1.5 rounded-lg transition-colors">
+                Taslak (<?= $countDraft ?>)
+            </button>
         </div>
+
         <a href="<?= e(url('/admin/posts/create')) ?>"
-           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-semibold hover:opacity-90">
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-semibold hover:opacity-90 self-start sm:self-auto">
             <i class="fa-solid fa-plus"></i>
             <span>Yeni Yazı Ekle</span>
         </a>
@@ -22,7 +58,7 @@ use Core\View;
                         <th class="py-3 px-4">Kategori</th>
                         <th class="py-3 px-4">Durum</th>
                         <th class="py-3 px-4">Okunma</th>
-                        <th class="py-3 px-4">Tarih</th>
+                        <th class="py-3 px-4">Yayın / Zamanlama Tarihi</th>
                         <th class="py-3 px-4 text-right">İşlem</th>
                     </tr>
                 </thead>
@@ -33,7 +69,8 @@ use Core\View;
                         </tr>
                     <?php else: ?>
                         <?php foreach ($posts as $p): ?>
-                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors">
+                            <tr x-show="filterStatus === 'all' || filterStatus === <?= e(json_encode($p['status'])) ?>"
+                                class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors">
                                 <td class="py-3.5 px-4">
                                     <div class="flex items-center gap-3">
                                         <?php if (!empty($p['cover_image'])): ?>
@@ -51,7 +88,19 @@ use Core\View;
                                     </div>
                                 </td>
                                 <td class="py-3.5 px-4">
-                                    <?php if (!empty($p['category_name'])): ?>
+                                    <?php if (!empty($p['categories'])): ?>
+                                        <div class="flex flex-wrap items-center gap-1">
+                                            <?php foreach ($p['categories'] as $pCat): ?>
+                                                <?= View::renderPartial('components/category-badge', [
+                                                    'name'   => $pCat['name'],
+                                                    'slug'   => '',
+                                                    'icon'   => $pCat['icon'] ?? '',
+                                                    'color'  => $pCat['color'] ?? '#18181b',
+                                                    'linked' => false,
+                                                ]) ?>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php elseif (!empty($p['category_name'])): ?>
                                         <?= View::renderPartial('components/category-badge', [
                                             'name'   => $p['category_name'],
                                             'slug'   => '',
@@ -66,15 +115,28 @@ use Core\View;
                                 <td class="py-3.5 px-4">
                                     <?php if ($p['status'] === 'published'): ?>
                                         <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-semibold">Yayında</span>
+                                    <?php elseif ($p['status'] === 'scheduled'): ?>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-semibold" title="Seçilen tarihte otomatik yayınlanacak">
+                                            <i class="fa-regular fa-clock text-[10px]"></i>
+                                            <span>Zamanlanmış</span>
+                                        </span>
                                     <?php else: ?>
                                         <span class="px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 font-semibold">Taslak</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="py-3.5 px-4 font-medium"><?= (int) $p['views_count'] ?></td>
-                                <td class="py-3.5 px-4 text-zinc-500"><?= e(format_date($p['published_at'] ?: $p['created_at'])) ?></td>
+                                <td class="py-3.5 px-4 text-zinc-500">
+                                    <?php if ($p['status'] === 'scheduled'): ?>
+                                        <span class="text-amber-700 dark:text-amber-400 font-medium">
+                                            <?= e(format_date($p['published_at'] ?: $p['created_at'], true)) ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <?= e(format_date($p['published_at'] ?: $p['created_at'])) ?>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="py-3.5 px-4 text-right">
                                     <div class="inline-flex items-center gap-1.5">
-                                        <a href="<?= e(post_url($p)) ?>" target="_blank" class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Görüntüle">
+                                        <a href="<?= e(post_url($p)) ?>" target="_blank" class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="<?= $p['status'] === 'published' ? 'Görüntüle' : 'Önizle (Yönetici)' ?>">
                                             <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                         </a>
                                         <a href="<?= e(url('/admin/posts/' . $p['id'] . '/edit')) ?>" class="p-1.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Düzenle">

@@ -72,14 +72,16 @@ $authorAvatar = $author['avatar'] ?? '';
                 <?php $heroPost = $featuredPosts[0] ?? $latestPosts[0]; ?>
                 <section class="pb-10 border-b border-zinc-200 dark:border-zinc-800">
                     <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 sm:p-8 bg-zinc-50 dark:bg-zinc-900/50">
-                        <div class="flex items-center gap-2 mb-3">
+                        <div class="flex flex-wrap items-center gap-2 mb-3">
                             <span class="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">Öne Çıkan</span>
-                            <?= View::renderPartial('components/category-badge', [
-                                'name'  => $heroPost['category_name'] ?? '',
-                                'slug'  => $heroPost['category_slug'] ?? '',
-                                'icon'  => $heroPost['category_icon'] ?? '',
-                                'color' => $heroPost['category_color'] ?? '#18181b',
-                            ]) ?>
+                            <?php foreach (($heroPost['categories'] ?? []) as $hCat): ?>
+                                <?= View::renderPartial('components/category-badge', [
+                                    'name'  => $hCat['name'] ?? '',
+                                    'slug'  => $hCat['slug'] ?? '',
+                                    'icon'  => $hCat['icon'] ?? '',
+                                    'color' => $hCat['color'] ?? '#18181b',
+                                ]) ?>
+                            <?php endforeach; ?>
                         </div>
                         <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
                             <a href="<?= e(post_url($heroPost)) ?>" class="hover:underline">
@@ -141,13 +143,17 @@ $authorAvatar = $author['avatar'] ?? '';
                         <article class="p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/40 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between gap-2 mb-2.5">
-                                    <?= View::renderPartial('components/category-badge', [
-                                        'name'  => $fp['category_name'] ?? '',
-                                        'slug'  => $fp['category_slug'] ?? '',
-                                        'icon'  => $fp['category_icon'] ?? '',
-                                        'color' => $fp['category_color'] ?? '#18181b',
-                                    ]) ?>
-                                    <span class="text-xs text-zinc-500"><?= reading_time($fp['content']) ?> dk okuma</span>
+                                    <div class="flex flex-wrap items-center gap-1">
+                                        <?php foreach (($fp['categories'] ?? []) as $fpCat): ?>
+                                            <?= View::renderPartial('components/category-badge', [
+                                                'name'  => $fpCat['name'] ?? '',
+                                                'slug'  => $fpCat['slug'] ?? '',
+                                                'icon'  => $fpCat['icon'] ?? '',
+                                                'color' => $fpCat['color'] ?? '#18181b',
+                                            ]) ?>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <span class="text-xs text-zinc-500 shrink-0"><?= reading_time($fp['content']) ?> dk okuma</span>
                                 </div>
                                 <h3 class="text-base font-bold tracking-tight mb-2">
                                     <a href="<?= e(post_url($fp)) ?>" class="hover:underline">
@@ -208,13 +214,17 @@ $authorAvatar = $author['avatar'] ?? '';
                                 <div class="p-5 flex-1 flex flex-col justify-between">
                                     <div>
                                         <div class="flex items-center justify-between gap-2 mb-2.5">
-                                            <?= View::renderPartial('components/category-badge', [
-                                                'name'  => $post['category_name'] ?? '',
-                                                'slug'  => $post['category_slug'] ?? '',
-                                                'icon'  => $post['category_icon'] ?? '',
-                                                'color' => $post['category_color'] ?? '#18181b',
-                                            ]) ?>
-                                            <span class="text-xs text-zinc-500"><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></span>
+                                            <div class="flex flex-wrap items-center gap-1">
+                                                <?php foreach (($post['categories'] ?? []) as $pCat): ?>
+                                                    <?= View::renderPartial('components/category-badge', [
+                                                        'name'  => $pCat['name'] ?? '',
+                                                        'slug'  => $pCat['slug'] ?? '',
+                                                        'icon'  => $pCat['icon'] ?? '',
+                                                        'color' => $pCat['color'] ?? '#18181b',
+                                                    ]) ?>
+                                                <?php endforeach; ?>
+                                            </div>
+                                            <span class="text-xs text-zinc-500 shrink-0"><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></span>
                                         </div>
                                         <h3 class="text-base font-bold tracking-tight mb-2">
                                             <a href="<?= e(post_url($post)) ?>" class="hover:underline"><?= e($post['title']) ?></a>
@@ -241,7 +251,19 @@ $authorAvatar = $author['avatar'] ?? '';
                                         <time><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></time>
                                         <span>&middot;</span>
                                         <span><?= reading_time($post['content']) ?> dk okuma</span>
-                                        <?php if (!empty($post['category_name'])): ?>
+                                        <?php if (!empty($post['categories'])): ?>
+                                            <span>&middot;</span>
+                                            <div class="inline-flex flex-wrap items-center gap-1.5">
+                                                <?php foreach ($post['categories'] as $pCat): ?>
+                                                    <?= View::renderPartial('components/category-badge', [
+                                                        'name'  => $pCat['name'],
+                                                        'slug'  => $pCat['slug'],
+                                                        'icon'  => $pCat['icon'] ?? '',
+                                                        'color' => $pCat['color'] ?? '#18181b',
+                                                    ]) ?>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php elseif (!empty($post['category_name'])): ?>
                                             <span>&middot;</span>
                                             <?= View::renderPartial('components/category-badge', [
                                                 'name'  => $post['category_name'],

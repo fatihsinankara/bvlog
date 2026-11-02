@@ -174,7 +174,7 @@ foreach ($assignedPosts as $ap) {
                                         </span>
                                         <span class="text-[11px] text-zinc-400">
                                             <?= format_date($p['published_at'] ?: $p['created_at']) ?> &middot; 
-                                            <?= $p['status'] === 'published' ? 'Yayında' : 'Taslak' ?>
+                                            <?= $p['status'] === 'published' ? 'Yayında' : ($p['status'] === 'scheduled' ? 'Zamanlanmış' : 'Taslak') ?>
                                         </span>
                                     </div>
                                 </label>
