@@ -121,6 +121,16 @@ class Migrator
                 // Sessizce geç
             }
         }
+
+        if (version_compare($fromVersion, '1.3.1', '<')) {
+            try {
+                $pdo->exec("INSERT IGNORE INTO `settings` (`key_name`, `value`) VALUES
+                    ('cache_enabled', '1'),
+                    ('cache_default_ttl', '3600')");
+            } catch (\Throwable $e) {
+                // Sessizce geç
+            }
+        }
     }
 
     public static function addColumnIfNotExists(\PDO $pdo, string $table, string $column, string $definition): void

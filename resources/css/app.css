@@ -4,6 +4,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Root Color Scheme Adaptation (Modern Web Guidance) */
+:root {
+    color-scheme: light dark;
+}
+
+:root:not(.dark) {
+    color-scheme: light;
+}
+
+:root.dark {
+    color-scheme: dark;
+}
+
+/* Initial Scroll Target for Active Sidebar Link (Modern Web Guidance) */
+[data-sidebar-active="true"] {
+    scroll-initial-target: nearest;
+}
+
+/* Newsletter Input Validation After Interaction (Modern Web Guidance) */
+input.bvlog-newsletter-email:user-invalid {
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.06);
+}
+
+input.bvlog-newsletter-email:user-valid {
+    border-color: #10b981;
+}
+
 /* Modal Dialog Scroll Containment (Modern Web Guidance) */
 dialog:modal {
     overscroll-behavior: contain;

@@ -31,7 +31,7 @@ if (!is_installed()) {
 }
 
 // Veritabanı sürüm yükseltmelerini ve eklentileri yükle
-Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.3.0');
+Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.3.1');
 Core\PluginManager::boot();
 Core\Hook::doAction('app_init');
 

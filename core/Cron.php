@@ -102,7 +102,7 @@ class Cron
                 }
                 return [
                     'affected' => 0,
-                    'message'  => 'Sistem güncel (v' . ($info['current_version'] ?? '1.3.0') . ').',
+                    'message'  => 'Sistem güncel (v' . ($info['current_version'] ?? '1.3.1') . ').',
                 ];
             },
         ]);
@@ -500,7 +500,12 @@ class Cron
             }
         }
 
-        // 2. 1 saatten eski kalıntı güncelleme ZIP dosyalarını temizle
+        // 2. Süresi dolmuş uygulama önbellek (bvcache_*.cache) dosyalarını temizle
+        if (class_exists('\\Core\\Cache')) {
+            $cleaned += Cache::purgeExpired();
+        }
+
+        // 3. 1 saatten eski kalıntı güncelleme ZIP dosyalarını temizle
         $tempZips = glob(BVLOG_ROOT . '/storage/cache/update_*.zip');
         if (is_array($tempZips)) {
             foreach ($tempZips as $zf) {

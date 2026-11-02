@@ -402,7 +402,9 @@ class Updater
             }
         }
 
-        if (class_exists('\\App\\Models\\Setting')) {
+        if (class_exists('\\Core\\Cache')) {
+            Cache::flushAll(true);
+        } elseif (class_exists('\\App\\Models\\Setting')) {
             Setting::clearCache();
         }
 

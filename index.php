@@ -31,7 +31,7 @@ if (!is_installed()) {
 }
 
 // 2. Sürüm & Veritabanı Otomatik Yükseltme Kontrolü (FTP Güncellemeleri İçin)
-Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.0.0');
+Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.3.1');
 
 // 3. Eklentileri Yükle (Hata korumalı ve otomatik karantina destekli)
 Core\PluginManager::boot();
@@ -163,9 +163,19 @@ Core\Router::post('/admin/plugins/clear-quarantine', [App\Controllers\Admin\Plug
 Core\Router::post('/admin/plugins/upload', [App\Controllers\Admin\PluginController::class, 'upload'], ['auth']);
 Core\Router::post('/admin/plugins/delete', [App\Controllers\Admin\PluginController::class, 'delete'], ['auth']);
 
+// Önbellek (Cache) Yönetimi
+Core\Router::get('/admin/cache', [App\Controllers\Admin\CacheController::class, 'index'], ['auth']);
+Core\Router::post('/admin/cache/settings', [App\Controllers\Admin\CacheController::class, 'updateSettings'], ['auth']);
+Core\Router::post('/admin/cache/clear', [App\Controllers\Admin\CacheController::class, 'clear'], ['auth']);
+Core\Router::post('/admin/cache/clear-group', [App\Controllers\Admin\CacheController::class, 'clearGroup'], ['auth']);
+Core\Router::post('/admin/cache/delete-item', [App\Controllers\Admin\CacheController::class, 'deleteItem'], ['auth']);
+Core\Router::post('/admin/cache/warmup', [App\Controllers\Admin\CacheController::class, 'warmup'], ['auth']);
+
 // Ayarlar & Cron Yönetimi
 Core\Router::get('/admin/settings', [App\Controllers\Admin\SettingsController::class, 'index'], ['auth']);
 Core\Router::post('/admin/settings', [App\Controllers\Admin\SettingsController::class, 'update'], ['auth']);
+Core\Router::get('/admin/settings/{section}', [App\Controllers\Admin\SettingsController::class, 'show'], ['auth']);
+Core\Router::post('/admin/settings/{section}', [App\Controllers\Admin\SettingsController::class, 'update'], ['auth']);
 Core\Router::post('/admin/cron/run', [App\Controllers\Admin\SettingsController::class, 'runCron'], ['auth']);
 Core\Router::post('/admin/cron/regenerate-token', [App\Controllers\Admin\SettingsController::class, 'regenerateCronToken'], ['auth']);
 Core\Router::get('/admin/updates/check', [App\Controllers\Admin\SettingsController::class, 'checkUpdates'], ['auth']);

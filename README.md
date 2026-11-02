@@ -1,6 +1,6 @@
 # Bvlog — Kişisel Blog, Portfolyo ve Özgeçmiş (CV) Sistemi
 
-![Version](https://img.shields.io/badge/S%C3%BCr%C3%BCm-v1.3.0-18181b?style=flat-square)
+![Version](https://img.shields.io/badge/S%C3%BCr%C3%BCm-v1.3.1-18181b?style=flat-square)
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-18181b?style=flat-square&logo=php)
 ![MySQL](https://img.shields.io/badge/MySQL%20%2F%20MariaDB-5.7%2B-18181b?style=flat-square&logo=mysql)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-18181b?style=flat-square&logo=tailwindcss)
@@ -73,13 +73,24 @@ Varsayılan olarak yalın bir kişisel blog olarak çalışır; ihtiyacınıza g
 2. **İçindekiler Tablosu — TOC (`table-of-contents`)**: Yazılardaki `H2` ve `H3` başlıklarını otomatik tarayarak daraltılabilir, pürüzsüz kaydırmalı (smooth scroll) içindekiler fihristi oluşturur.
 3. **CAPTCHA Güvenlik Koruması (`captcha`)**: **Cloudflare Turnstile** ve **Google reCAPTCHA v2** desteğiyle giriş, iletişim, yorum ve parola sıfırlama formlarını bot ve spam saldırılarına karşı korur.
 4. **SMTP E-posta Yapılandırması (`smtp`)**: Özel SMTP sunucusu üzerinden güvenli e-posta gönderimi, canlı bağlantı testi, sunucu tanılama aracı ve eklentiler için global `bvlog_mail()` API'si sunar.
-5. **Okuma İlerleme Çubuğu (`reading-progress`)**: Blog yazılarında sayfanın en üstünde sade bir okuma ilerleme göstergesi sunar.
-6. **Kod Bloğu Kopyalama Butonu (`code-copy-button`)**: Yazılardaki kod bloklarının sağ üst köşesine tek tıkla kopyalama butonu ekler.
+5. **E-posta Bülteni — Newsletter (`newsletter`)**: Footer üstü KVKK ve 6563 sayılı ETK açık rıza onaylı bülten abonelik kutusu, çift aşamalı doğrulama (Double Opt-In), tek tıkla abonelikten çıkış (`List-Unsubscribe`) ve SMTP üzerinden toplu/seçili bülten gönderim sistemi.
+6. **Okuma İlerleme Çubuğu (`reading-progress`)**: Blog yazılarında sayfanın en üstünde sade bir okuma ilerleme göstergesi sunar.
+7. **Kod Bloğu Kopyalama Butonu (`code-copy-button`)**: Yazılardaki kod bloklarının sağ üst köşesine tek tıkla kopyalama butonu ekler.
 
-### 8. Kusursuz SEO & Performans Altyapısı
+### 8. Çok Katmanlı Dahili Önbellek Motoru (`Core\Cache`)
+- **L1 (Bellek İçi) + L2 (Dosya Tabanlı) Önbellek Mimarisi**: Harici Redis/Memcached bağımlılığı gerektirmeden standart paylaşımlı hostinglerde dahi veritabanı yükünü sıfıra indirir.
+- **Sıfır Sorgu (Zero-Query) Ön Yüz Yanıtları**: Önbellek dolu (warm) olduğunda anasayfa, blog listeleri, kategori arşivleri, koleksiyonlar, portfolyo, CV, `/sitemap.xml` ve `/rss.xml` isteklerinde MySQL bağlantısı dahi açılmaz (`PDO` lazy connection).
+- **6 İzole Önbellek Grubu**: `settings` (Ayarlar & Yazar), `home` (Anasayfa Blokları), `blog` (Yazılar, Kategoriler, Etiketler, Yorumlar, İşlenmiş TOC & Seri Kutuları), `portfolio` (Projeler), `cv` (Özgeçmiş & JSON-LD) ve `feeds` (Sitemap & RSS).
+- **Akıllı Otomatik Temizleme (Auto-Invalidation)**: Yazı, kategori, yorum, proje, CV veya site ayarı güncellendiğinde veritabanı katmanı yalnızca ilgili önbellek grubunu anında otomatik olarak yeniler.
+- **Gelişmiş Önbellek Yönetim Paneli (`/admin/cache`)**:
+  - Tek tıkla **Önbelleği Isıtma (Preload / Warmup)**, grup bazlı temizleme veya tüm önbelleği sıfırlama.
+  - **PHP OPcache** (sunucu bytecode önbelleği) isabet oranı, bellek kullanımı ve derlenmiş betik istatistiklerini izleme ve sıfırlama.
+  - Canlı önbellek kayıtlarını anahtar, grup, boyut, oluşturulma zamanı ve kalan yaşam süresi (TTL) detaylarıyla filtreleyip tekil olarak yönetebilme.
+
+### 9. Kusursuz SEO & Performans Altyapısı
 - **Esnek Kalıcı Bağlantılar (Permalinks) & Otomatik 301 Yönlendirmeleri**: `/blog/{slug}`, `/{slug}`, `/{kategori}/{slug}`, `/{yil}/{ay}/{slug}` gibi URL yapıları arasından seçim yapabilme; URL yapısı değiştirildiğinde eski bağlantıları otomatik olarak `301` ile yeni adrese yönlendirme.
 - Yazı ekleme/düzenleme ekranında canlı Google arama sonucu (SERP) önizlemesi.
-- Otomatik `/sitemap.xml`, `/rss.xml` (`/feed`) ve `/robots.txt` üretimi.
+- Otomatik ve önbellek destekli `/sitemap.xml`, `/rss.xml` (`/feed`) ve `/robots.txt` üretimi.
 - Canonical URL, OpenGraph, Twitter Card ve Schema.org (`BlogPosting`, `Person`, `WebSite`) JSON-LD yapısal verileri.
 - `.htaccess` üzerinde hazır Gzip/Brotli sıkıştırma ve statik dosya tarayıcı önbellekleme kuralları.
 
@@ -128,11 +139,11 @@ bvlog/
 │   └── Views/              # Yönetim paneli, kurulum ve çekirdek şablonları
 ├── assets/                 # Vite ile derlenmiş üretim CSS, JS ve FontAwesome dosyaları
 ├── config/                 # Uygulama ve veritabanı yapılandırması
-├── core/                   # Çekirdek sınıflar (Router, Database, Updater, Migrator, Cron, Hook vb.)
+├── core/                   # Çekirdek sınıflar (Router, Database, Cache, Updater, Migrator, Cron, Hook vb.)
 ├── plugins/                # Eklentiler (captcha, collections, smtp, table-of-contents vb.)
 ├── resources/              # Tailwind CSS ve Alpine.js kaynak dosyaları
 ├── storage/
-│   ├── cache/              # Önbellek, cron durum ve sürüm kontrol dosyaları
+│   ├── cache/              # L2 uygulama önbellek kayıtları (bvcache_*), cron durum ve sürüm kontrol dosyaları
 │   ├── logs/               # Sistem, güncelleme, rate-limit ve hata günlükleri
 │   └── uploads/            # Medya kütüphanesi görselleri (featured / content)
 ├── themes/                 # Temalar (default ve paper temaları)
