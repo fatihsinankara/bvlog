@@ -37,14 +37,22 @@ Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.0.0');
 Core\PluginManager::boot();
 Core\Hook::doAction('app_init');
 
-// 3. Bakım Modu Kontrolü (Yöneticiler hariç)
-if (setting('maintenance_mode', '0') === '1' && !str_starts_with($currentPath, '/admin') && !Core\Session::has('admin_user_id')) {
+// 3b. Opsiyonel Ziyaretçi Tetiklemeli Cron (Web-Cron Yedek Modu aktifse)
+if ($currentPath !== '/cron') {
+    Core\Cron::runWebFallbackIfNeeded();
+}
+
+// 4. Bakım Modu Kontrolü (Yöneticiler ve Cron uç noktası hariç)
+if (setting('maintenance_mode', '0') === '1' && !str_starts_with($currentPath, '/admin') && $currentPath !== '/cron' && !Core\Session::has('admin_user_id')) {
     http_response_code(503);
     Core\View::render('errors/maintenance', [], null);
     exit;
 }
 
-// 4. Rotalar — Ön Yüz (Public)
+// Zamanlanmış Görevler (Cron) HTTP Uç Noktası
+Core\Router::get('/cron', [App\Controllers\CronController::class, 'handle']);
+
+// 5. Rotalar — Ön Yüz (Public)
 Core\Router::get('/', [App\Controllers\HomeController::class, 'index']);
 Core\Router::get('/blog', [App\Controllers\BlogController::class, 'index']);
 Core\Router::get('/category/{slug}', [App\Controllers\BlogController::class, 'category']);
@@ -155,9 +163,11 @@ Core\Router::post('/admin/plugins/clear-quarantine', [App\Controllers\Admin\Plug
 Core\Router::post('/admin/plugins/upload', [App\Controllers\Admin\PluginController::class, 'upload'], ['auth']);
 Core\Router::post('/admin/plugins/delete', [App\Controllers\Admin\PluginController::class, 'delete'], ['auth']);
 
-// Ayarlar
+// Ayarlar & Cron Yönetimi
 Core\Router::get('/admin/settings', [App\Controllers\Admin\SettingsController::class, 'index'], ['auth']);
 Core\Router::post('/admin/settings', [App\Controllers\Admin\SettingsController::class, 'update'], ['auth']);
+Core\Router::post('/admin/cron/run', [App\Controllers\Admin\SettingsController::class, 'runCron'], ['auth']);
+Core\Router::post('/admin/cron/regenerate-token', [App\Controllers\Admin\SettingsController::class, 'regenerateCronToken'], ['auth']);
 Core\Router::get('/admin/updates/check', [App\Controllers\Admin\SettingsController::class, 'checkUpdates'], ['auth']);
 Core\Router::post('/admin/updates/check', [App\Controllers\Admin\SettingsController::class, 'checkUpdates'], ['auth']);
 Core\Router::post('/admin/updates/apply', [App\Controllers\Admin\SettingsController::class, 'applyUpdate'], ['auth']);

@@ -2,9 +2,11 @@
 
 namespace App\Controllers\Admin;
 
+use App\Models\Post;
 use App\Models\Setting;
 use App\Models\User;
 use Core\Controller;
+use Core\Cron;
 use Core\Request;
 use Core\Security;
 use Core\Session;
@@ -28,13 +30,24 @@ class SettingsController extends Controller
         $updateInfo = \Core\Updater::check(false);
         $updateEnv  = \Core\Updater::checkEnvironment();
 
+        $cronSummary  = Cron::getStatusSummary();
+        $cronTasks    = Cron::getTasksWithState();
+        $cronCommands = Cron::getServerCommands();
+        $cronHistory  = Cron::getHistory();
+        $scheduledPostsCount = Post::countScheduled();
+
         $this->adminView('admin/settings/index', [
-            'settings'   => $settings,
-            'author'     => $author,
-            'sections'   => $sections,
-            'updateInfo' => $updateInfo,
-            'updateEnv'  => $updateEnv,
-            'pageTitle'  => 'Site & Modül Ayarları',
+            'settings'            => $settings,
+            'author'              => $author,
+            'sections'            => $sections,
+            'updateInfo'          => $updateInfo,
+            'updateEnv'           => $updateEnv,
+            'cronSummary'         => $cronSummary,
+            'cronTasks'           => $cronTasks,
+            'cronCommands'        => $cronCommands,
+            'cronHistory'         => $cronHistory,
+            'scheduledPostsCount' => $scheduledPostsCount,
+            'pageTitle'           => 'Site & Modül Ayarları',
         ]);
     }
 
@@ -117,6 +130,8 @@ class SettingsController extends Controller
                 $structure = 'default';
             }
             Setting::set('permalink_structure', $structure);
+        } elseif ($tab === 'cron') {
+            Setting::set('cron_web_fallback', Request::post('cron_web_fallback') ? '1' : '0');
         } elseif ($tab === 'security') {
             Setting::set('maintenance_mode', Request::post('maintenance_mode') ? '1' : '0');
             Setting::set('maintenance_message', Request::post('maintenance_message', ''));
@@ -141,6 +156,41 @@ class SettingsController extends Controller
 
         Session::flash('success', 'Ayarlar başarıyla kaydedildi.');
         $this->redirect('/admin/settings?tab=' . urlencode($tab));
+    }
+
+    public function runCron(): void
+    {
+        $taskId = trim((string) Request::post('task_id', ''));
+        $result = $taskId !== ''
+            ? Cron::run(false, $taskId, 'manual')
+            : Cron::run(true, null, 'manual');
+
+        if (!empty($result['locked'])) {
+            Session::flash('error', $result['message'] ?? 'Başka bir Cron işlemi şu anda çalışıyor.');
+            $this->redirect('/admin/settings?tab=cron');
+        }
+
+        $executed = $result['executed'] ?? [];
+        if ($taskId !== '' && !empty($executed[0])) {
+            $item = $executed[0];
+            if ($item['status'] === 'error') {
+                Session::flash('error', $item['title'] . ' çalışırken hata oluştu: ' . $item['message']);
+            } else {
+                Session::flash('success', $item['title'] . ' çalıştırıldı (' . $item['duration_ms'] . ' ms): ' . $item['message']);
+            }
+        } else {
+            $count = count($executed);
+            Session::flash('success', "Tüm zamanlanmış görevler ({$count} görev, {$result['duration_ms']} ms) başarıyla çalıştırıldı.");
+        }
+
+        $this->redirect('/admin/settings?tab=cron');
+    }
+
+    public function regenerateCronToken(): void
+    {
+        Cron::regenerateToken();
+        Session::flash('success', 'Cron güvenlik anahtarı (token) yenilendi. Sunucunuzda HTTP/cURL Cron kullanıyorsanız komuttaki anahtarı güncellemeyi unutmayın.');
+        $this->redirect('/admin/settings?tab=cron');
     }
 
     public function checkUpdates(): void
