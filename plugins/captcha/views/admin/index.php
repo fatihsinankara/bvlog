@@ -8,7 +8,7 @@ $forms      = $config['forms'] ?? ['login', 'contact', 'comment', 'forgot_passwo
 $theme      = $config['theme'] ?? 'auto';
 ?>
 
-<div class="space-y-6 max-w-4xl" x-data="{
+<div class="space-y-6 w-full" x-data="{
     provider: '<?= e($provider) ?>',
     testing: false,
     testResult: null,

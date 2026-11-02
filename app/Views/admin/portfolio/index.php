@@ -2,7 +2,7 @@
     <?php if (!is_module_active('portfolio')): ?>
         <div class="p-4 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200 text-xs flex items-center justify-between">
             <span><i class="fa-solid fa-circle-info mr-1.5"></i>Portfolyo modülü şu anda ziyaretçilere kapalıdır. Projelerinizi hazırlayabilir ve istediğiniz zaman Ayarlar'dan aktifleştirebilirsiniz.</span>
-            <a href="<?= e(url('/admin/settings?tab=modules')) ?>" class="font-semibold underline">Modülü Aç</a>
+            <a href="<?= e(url('/admin/settings/modules')) ?>" class="font-semibold underline">Modülü Aç</a>
         </div>
     <?php endif; ?>
 

@@ -18,7 +18,7 @@ use Core\View;
                     </span>
                 </div>
             </div>
-            <a href="<?= e(url('/admin/settings?tab=updates')) ?>"
+            <a href="<?= e(url('/admin/settings/updates')) ?>"
                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 text-white font-semibold text-xs hover:bg-amber-700 transition-colors shrink-0 self-start sm:self-center">
                 <span>Güncellemeyi İncele</span>
                 <i class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -98,7 +98,7 @@ use Core\View;
             </div>
         </a>
 
-        <a href="<?= e(url('/admin/settings?tab=homepage')) ?>" class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-400 transition-colors flex items-center gap-3.5">
+        <a href="<?= e(url('/admin/settings/homepage')) ?>" class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-400 transition-colors flex items-center gap-3.5">
             <div class="w-10 h-10 rounded-lg border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-table-columns"></i>
             </div>

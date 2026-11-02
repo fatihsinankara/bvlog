@@ -1,6 +1,7 @@
 <?php
 use App\Models\Comment;
 use App\Models\Message;
+use App\Models\Post;
 use Core\Csrf;
 use Core\Hook;
 use Core\Request;
@@ -12,20 +13,42 @@ $currentPath = Request::path();
 $siteTitle = setting('site_title', 'Bvlog');
 $pendingComments = Comment::count('status = "pending"');
 $unreadMessages = Message::count('is_read = 0');
+$scheduledPostsSidebar = Post::countScheduled();
 $updateInfo = Updater::check(false);
+$isSettingsRoute = str_starts_with($currentPath, '/admin/settings');
+$activeSettingsTab = $activeTab ?? '';
+if ($isSettingsRoute && $activeSettingsTab === '') {
+    $subPath = trim(substr($currentPath, strlen('/admin/settings')), '/');
+    $activeSettingsTab = $subPath !== '' ? $subPath : (string) Request::get('tab', 'general');
+}
+$settingsMenuItems = [
+    'general'    => ['icon' => 'fa-solid fa-sliders',                'label' => 'Genel Ayarlar'],
+    'profile'    => ['icon' => 'fa-regular fa-id-badge',             'label' => 'Yazar & Profil'],
+    'homepage'   => ['icon' => 'fa-solid fa-table-columns',          'label' => 'Anasayfa Yerleşimi'],
+    'modules'    => ['icon' => 'fa-solid fa-cubes',                  'label' => 'Modül Yönetimi'],
+    'permalinks' => ['icon' => 'fa-solid fa-link',                   'label' => 'Kalıcı Bağlantılar'],
+    'seo'        => ['icon' => 'fa-solid fa-magnifying-glass-chart', 'label' => 'SEO & Sosyal Paylaşım'],
+    'cron'       => ['icon' => 'fa-regular fa-clock',                'label' => 'Zamanlanmış Görevler', 'badge' => $scheduledPostsSidebar > 0],
+    'updates'    => ['icon' => 'fa-solid fa-arrows-rotate',          'label' => 'Güncellemeler', 'badge' => !empty($updateInfo['has_update'])],
+    'security'   => ['icon' => 'fa-solid fa-shield-halved',          'label' => 'Bakım & Güvenlik'],
+];
+if ($isSettingsRoute && !isset($settingsMenuItems[$activeSettingsTab])) {
+    $activeSettingsTab = 'general';
+}
 ?>
 <!DOCTYPE html>
-<html lang="tr" x-data="{ darkMode: localStorage.getItem('bvlog_theme') === 'dark', sidebarOpen: false }"
+<html lang="tr" x-data="{ darkMode: localStorage.getItem('bvlog_theme') === 'dark' || (!localStorage.getItem('bvlog_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches), sidebarOpen: false }"
       x-init="$watch('darkMode', val => { localStorage.setItem('bvlog_theme', val ? 'dark' : 'light'); document.documentElement.classList.toggle('dark', val); }); document.documentElement.classList.toggle('dark', darkMode);"
       :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <meta name="csrf-token" content="<?= e(Csrf::token()) ?>">
     <title><?= e(($pageTitle ?? 'Yönetim Paneli') . ' — ' . $siteTitle . ' Admin') ?></title>
     <link rel="stylesheet" href="<?= e(asset('css/app.css')) ?>">
     <script>
-        if (localStorage.getItem('bvlog_theme') === 'dark') {
+        if (localStorage.getItem('bvlog_theme') === 'dark' || (!localStorage.getItem('bvlog_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         }
     </script>
@@ -47,28 +70,32 @@ $updateInfo = Updater::check(false);
         </div>
 
         <!-- Menü Linkleri -->
-        <nav class="flex-1 overflow-y-auto p-3 space-y-1 text-sm">
+        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto p-3 space-y-1 text-sm">
             <div class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">İçerik & Medya</div>
 
             <a href="<?= e(url('/admin')) ?>"
+               <?= $currentPath === '/admin' ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors <?= $currentPath === '/admin' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <i class="fa-solid fa-gauge-high w-4 text-center"></i>
                 <span>Genel Bakış</span>
             </a>
 
             <a href="<?= e(url('/admin/posts')) ?>"
+               <?= str_starts_with($currentPath, '/admin/posts') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/posts') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <i class="fa-solid fa-pen-nib w-4 text-center"></i>
                 <span>Blog Yazıları</span>
             </a>
 
             <a href="<?= e(url('/admin/categories')) ?>"
+               <?= str_starts_with($currentPath, '/admin/categories') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/categories') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <i class="fa-solid fa-tags w-4 text-center"></i>
                 <span>Kategoriler</span>
             </a>
 
             <a href="<?= e(url('/admin/media')) ?>"
+               <?= str_starts_with($currentPath, '/admin/media') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/media') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <i class="fa-regular fa-images w-4 text-center"></i>
                 <span>Medya Galerisi</span>
@@ -79,6 +106,7 @@ $updateInfo = Updater::check(false);
             <div class="pt-3 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">Modüller & Etkileşim</div>
 
             <a href="<?= e(url('/admin/portfolio')) ?>"
+               <?= str_starts_with($currentPath, '/admin/portfolio') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/portfolio') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <span class="flex items-center gap-3">
                     <i class="fa-solid fa-briefcase w-4 text-center"></i>
@@ -90,6 +118,7 @@ $updateInfo = Updater::check(false);
             </a>
 
             <a href="<?= e(url('/admin/cv')) ?>"
+               <?= str_starts_with($currentPath, '/admin/cv') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/cv') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <span class="flex items-center gap-3">
                     <i class="fa-solid fa-id-card w-4 text-center"></i>
@@ -101,6 +130,7 @@ $updateInfo = Updater::check(false);
             </a>
 
             <a href="<?= e(url('/admin/comments')) ?>"
+               <?= str_starts_with($currentPath, '/admin/comments') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/comments') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <span class="flex items-center gap-3">
                     <i class="fa-regular fa-comments w-4 text-center"></i>
@@ -112,6 +142,7 @@ $updateInfo = Updater::check(false);
             </a>
 
             <a href="<?= e(url('/admin/messages')) ?>"
+               <?= str_starts_with($currentPath, '/admin/messages') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/messages') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <span class="flex items-center gap-3">
                     <i class="fa-regular fa-envelope w-4 text-center"></i>
@@ -125,12 +156,14 @@ $updateInfo = Updater::check(false);
             <div class="pt-3 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">Görünüm & Sistem</div>
 
             <a href="<?= e(url('/admin/themes')) ?>"
+               <?= str_starts_with($currentPath, '/admin/themes') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/themes') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <i class="fa-solid fa-palette w-4 text-center"></i>
                 <span>Temalar</span>
             </a>
 
             <a href="<?= e(url('/admin/plugins')) ?>"
+               <?= str_starts_with($currentPath, '/admin/plugins') ? 'data-sidebar-active="true"' : '' ?>
                class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/plugins') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <i class="fa-solid fa-plug w-4 text-center"></i>
                 <span>Eklentiler</span>
@@ -138,17 +171,83 @@ $updateInfo = Updater::check(false);
 
             <?php Hook::doAction('admin_sidebar_system_menu'); ?>
 
-            <a href="<?= e(url('/admin/settings')) ?>"
-               class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/settings') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
+            <a href="<?= e(url('/admin/cache')) ?>"
+               <?= str_starts_with($currentPath, '/admin/cache') ? 'data-sidebar-active="true"' : '' ?>
+               class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= str_starts_with($currentPath, '/admin/cache') ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
                 <span class="flex items-center gap-3">
-                    <i class="fa-solid fa-sliders w-4 text-center"></i>
-                    <span>Site & Sistem Ayarları</span>
+                    <i class="fa-solid fa-bolt w-4 text-center"></i>
+                    <span>Önbellek Yönetimi</span>
                 </span>
-                <?php if (!empty($updateInfo['has_update'])): ?>
-                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse" title="Yeni güncelleme mevcut"></span>
+                <?php if (setting('cache_enabled', '1') !== '1'): ?>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-300 dark:border-zinc-700 text-zinc-500">Pasif</span>
                 <?php endif; ?>
             </a>
+
+            <!-- Site & Modül Ayarları (Akordiyon Menü) -->
+            <div x-data="{ settingsOpen: <?= $isSettingsRoute ? 'true' : 'false' ?> }" class="space-y-1">
+                <button type="button"
+                        @click="settingsOpen = !settingsOpen; if (settingsOpen) { $nextTick(() => { $el.parentElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }); }"
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors <?= $isSettingsRoute ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' ?>">
+                    <span class="flex items-center gap-3">
+                        <i class="fa-solid fa-sliders w-4 text-center"></i>
+                        <span>Site & Modül Ayarları</span>
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <?php if (!empty($updateInfo['has_update']) || $scheduledPostsSidebar > 0): ?>
+                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse" title="Bekleyen görev veya güncelleme mevcut"></span>
+                        <?php endif; ?>
+                        <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" :class="settingsOpen ? 'rotate-180' : ''"></i>
+                    </span>
+                </button>
+
+                <div x-show="settingsOpen"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     <?= !$isSettingsRoute ? 'style="display: none;"' : '' ?>
+                     class="pl-4 ml-3 border-l border-zinc-200 dark:border-zinc-800 space-y-0.5 py-1">
+                    <?php foreach ($settingsMenuItems as $subKey => $subItem):
+                        $isSubActive = $isSettingsRoute && $activeSettingsTab === $subKey;
+                        $subUrl = url('/admin/settings/' . $subKey);
+                    ?>
+                        <a href="<?= e($subUrl) ?>"
+                           <?= $isSubActive ? 'data-sidebar-active="true"' : '' ?>
+                           class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors <?= $isSubActive ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-200' ?>">
+                            <span class="flex items-center gap-2.5 truncate">
+                                <i class="<?= e($subItem['icon']) ?> w-3.5 text-center text-[11px] <?= $isSubActive ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 dark:text-zinc-500' ?>"></i>
+                                <span class="truncate"><?= e($subItem['label']) ?></span>
+                            </span>
+                            <?php if (!empty($subItem['badge'])): ?>
+                                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+                            <?php endif; ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         </nav>
+        <script>
+            (function () {
+                var nav = document.getElementById('admin-sidebar-nav');
+                if (!nav) return;
+                var key = 'bvlog_admin_sidebar_scroll';
+                var saved = sessionStorage.getItem(key);
+                if (saved !== null) {
+                    nav.scrollTop = parseInt(saved, 10) || 0;
+                }
+                var activeEl = nav.querySelector('[data-sidebar-active="true"]') || nav.querySelector('.bg-zinc-900');
+                if (activeEl) {
+                    var navRect = nav.getBoundingClientRect();
+                    var elRect = activeEl.getBoundingClientRect();
+                    if (elRect.top < navRect.top + 12 || elRect.bottom > navRect.bottom - 12) {
+                        activeEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+                        sessionStorage.setItem(key, String(nav.scrollTop));
+                    }
+                }
+                nav.addEventListener('scroll', function () {
+                    sessionStorage.setItem(key, String(nav.scrollTop));
+                }, { passive: true });
+            })();
+        </script>
 
         <!-- Alt Kullanıcı & Çıkış -->
         <div class="p-3 shrink-0 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
@@ -177,7 +276,7 @@ $updateInfo = Updater::check(false);
 
             <div class="flex items-center gap-2.5">
                 <?php if (!empty($updateInfo['has_update'])): ?>
-                    <a href="<?= e(url('/admin/settings?tab=updates')) ?>"
+                    <a href="<?= e(url('/admin/settings/updates')) ?>"
                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
                        title="Yeni Bvlog sürümü mevcut: v<?= e($updateInfo['latest_version']) ?>">
                         <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>

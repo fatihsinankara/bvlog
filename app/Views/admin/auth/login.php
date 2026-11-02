@@ -3,14 +3,33 @@ use Core\Session;
 $siteTitle = setting('site_title', 'Bvlog');
 ?>
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr"
+      x-data="{ darkMode: localStorage.getItem('bvlog_theme') === 'dark' || (!localStorage.getItem('bvlog_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) }"
+      x-init="$watch('darkMode', val => { localStorage.setItem('bvlog_theme', val ? 'dark' : 'light'); document.documentElement.classList.toggle('dark', val); }); document.documentElement.classList.toggle('dark', darkMode);"
+      :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <title>Yönetici Girişi — <?= e($siteTitle) ?></title>
     <link rel="stylesheet" href="<?= e(asset('css/app.css')) ?>">
+    <script>
+        if (localStorage.getItem('bvlog_theme') === 'dark' || (!localStorage.getItem('bvlog_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
 </head>
-<body class="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-4">
+<body class="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex items-center justify-center p-4 relative transition-colors duration-200">
+
+    <!-- Sağ Üst Tema Değiştirici -->
+    <div class="fixed top-4 right-4 z-10">
+        <button type="button" @click="darkMode = !darkMode"
+                class="w-9 h-9 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 inline-flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 shadow-sm transition-colors"
+                title="Temayı Değiştir">
+            <i x-show="!darkMode" class="fa-solid fa-moon text-xs"></i>
+            <i x-show="darkMode" class="fa-solid fa-sun text-xs text-amber-400" style="display: none;"></i>
+        </button>
+    </div>
 
     <div class="w-full max-w-sm space-y-6">
         <div class="text-center space-y-2">
@@ -66,5 +85,6 @@ $siteTitle = setting('site_title', 'Bvlog');
         </div>
     </div>
 
+    <script type="module" src="<?= e(asset('js/app.js')) ?>"></script>
 </body>
 </html>

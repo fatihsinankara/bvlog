@@ -14,46 +14,72 @@ use Core\Uploader;
 
 class SettingsController extends Controller
 {
+    private const SUB_PAGE_TITLES = [
+        'general'    => 'Genel Site Ayarları',
+        'profile'    => 'Yazar & Profil Bilgileri',
+        'homepage'   => 'Anasayfa Yerleşimi & Blok Sıralaması',
+        'modules'    => 'Modül Yönetimi',
+        'permalinks' => 'Kalıcı Bağlantılar (URL Yapısı)',
+        'seo'        => 'SEO & Sosyal Paylaşım',
+        'cron'       => 'Zamanlanmış Görevler (Cron)',
+        'updates'    => 'Sistem & Sürüm Güncellemeleri',
+        'security'   => 'Bakım Modu & Güvenlik',
+    ];
+
     public function index(): void
     {
-        $settings = Setting::loadAll();
-        $author = User::firstAuthor() ?? [];
-        $sections = Setting::getJson('homepage_sections', [
-            ['id' => 'hero', 'title' => 'Yazar Tanıtım Kartı (Hero)', 'enabled' => true],
-            ['id' => 'featured_posts', 'title' => 'Öne Çıkan Yazılar', 'enabled' => true],
-            ['id' => 'latest_posts', 'title' => 'Son Blog Yazıları', 'enabled' => true],
-            ['id' => 'featured_projects', 'title' => 'Seçkin Portfolyo Projeleri', 'enabled' => true],
-            ['id' => 'cv_skills_summary', 'title' => 'Yetenek & Deneyim Özeti', 'enabled' => true],
-            ['id' => 'contact_cta', 'title' => 'İletişim Çağrı Kutusu', 'enabled' => true],
-        ]);
+        $legacyTab = (string) Request::get('tab', '');
+        if ($legacyTab !== '' && isset(self::SUB_PAGE_TITLES[$legacyTab])) {
+            $this->redirect('/admin/settings/' . $legacyTab);
+        }
 
-        $updateInfo = \Core\Updater::check(false);
-        $updateEnv  = \Core\Updater::checkEnvironment();
-
-        $cronSummary  = Cron::getStatusSummary();
-        $cronTasks    = Cron::getTasksWithState();
-        $cronCommands = Cron::getServerCommands();
-        $cronHistory  = Cron::getHistory();
-        $scheduledPostsCount = Post::countScheduled();
-
-        $this->adminView('admin/settings/index', [
-            'settings'            => $settings,
-            'author'              => $author,
-            'sections'            => $sections,
-            'updateInfo'          => $updateInfo,
-            'updateEnv'           => $updateEnv,
-            'cronSummary'         => $cronSummary,
-            'cronTasks'           => $cronTasks,
-            'cronCommands'        => $cronCommands,
-            'cronHistory'         => $cronHistory,
-            'scheduledPostsCount' => $scheduledPostsCount,
-            'pageTitle'           => 'Site & Modül Ayarları',
-        ]);
+        $this->show('general');
     }
 
-    public function update(): void
+    public function show(string $section = 'general'): void
     {
-        $tab = Request::post('active_tab', 'general');
+        if (!isset(self::SUB_PAGE_TITLES[$section])) {
+            $this->redirect('/admin/settings/general');
+        }
+
+        $settings = Setting::loadAll();
+        $data = [
+            'settings'  => $settings,
+            'activeTab' => $section,
+            'pageTitle' => self::SUB_PAGE_TITLES[$section],
+        ];
+
+        if ($section === 'profile') {
+            $data['author'] = User::firstAuthor() ?? [];
+        } elseif ($section === 'homepage') {
+            $data['sections'] = Setting::getJson('homepage_sections', [
+                ['id' => 'hero', 'title' => 'Yazar Tanıtım Kartı (Hero)', 'enabled' => true],
+                ['id' => 'featured_posts', 'title' => 'Öne Çıkan Yazılar', 'enabled' => true],
+                ['id' => 'latest_posts', 'title' => 'Son Blog Yazıları', 'enabled' => true],
+                ['id' => 'featured_projects', 'title' => 'Seçkin Portfolyo Projeleri', 'enabled' => true],
+                ['id' => 'cv_skills_summary', 'title' => 'Yetenek & Deneyim Özeti', 'enabled' => true],
+                ['id' => 'contact_cta', 'title' => 'İletişim Çağrı Kutusu', 'enabled' => true],
+            ]);
+        } elseif ($section === 'updates') {
+            $data['updateInfo'] = \Core\Updater::check(false);
+            $data['updateEnv']  = \Core\Updater::checkEnvironment();
+        } elseif ($section === 'cron') {
+            $data['cronSummary']         = Cron::getStatusSummary();
+            $data['cronTasks']           = Cron::getTasksWithState();
+            $data['cronCommands']        = Cron::getServerCommands();
+            $data['cronHistory']         = Cron::getHistory();
+            $data['scheduledPostsCount'] = Post::countScheduled();
+        }
+
+        $this->adminView('admin/settings/' . $section, $data);
+    }
+
+    public function update(?string $section = null): void
+    {
+        $tab = $section ?: (string) Request::post('active_tab', 'general');
+        if (!isset(self::SUB_PAGE_TITLES[$tab])) {
+            $tab = 'general';
+        }
 
         if ($tab === 'general') {
             Setting::set('site_title', Request::post('site_title', 'Bvlog'));
@@ -76,7 +102,7 @@ class SettingsController extends Controller
                     $cvPdf = Uploader::uploadPdf($pdfFile);
                 } catch (\Throwable $e) {
                     Session::flash('error', 'CV PDF yüklenemedi: ' . $e->getMessage());
-                    $this->redirect('/admin/settings?tab=profile');
+                    $this->redirect('/admin/settings/profile');
                 }
             }
 
@@ -142,11 +168,11 @@ class SettingsController extends Controller
                 $author = User::find((int) Session::get('admin_user_id', 1));
                 if (!$author || !Security::verifyPassword($currentPass, $author['password_hash'])) {
                     Session::flash('error', 'Mevcut parolanız hatalı olduğu için parola güncellenemedi.');
-                    $this->redirect('/admin/settings?tab=security');
+                    $this->redirect('/admin/settings/security');
                 }
                 if (strlen($newPass) < 6) {
                     Session::flash('error', 'Yeni parola en az 6 karakter olmalıdır.');
-                    $this->redirect('/admin/settings?tab=security');
+                    $this->redirect('/admin/settings/security');
                 }
                 User::updateById((int) $author['id'], [
                     'password_hash' => Security::hashPassword($newPass),
@@ -155,7 +181,7 @@ class SettingsController extends Controller
         }
 
         Session::flash('success', 'Ayarlar başarıyla kaydedildi.');
-        $this->redirect('/admin/settings?tab=' . urlencode($tab));
+        $this->redirect('/admin/settings/' . urlencode($tab));
     }
 
     public function runCron(): void
@@ -167,7 +193,7 @@ class SettingsController extends Controller
 
         if (!empty($result['locked'])) {
             Session::flash('error', $result['message'] ?? 'Başka bir Cron işlemi şu anda çalışıyor.');
-            $this->redirect('/admin/settings?tab=cron');
+            $this->redirect('/admin/settings/cron');
         }
 
         $executed = $result['executed'] ?? [];
@@ -183,14 +209,14 @@ class SettingsController extends Controller
             Session::flash('success', "Tüm zamanlanmış görevler ({$count} görev, {$result['duration_ms']} ms) başarıyla çalıştırıldı.");
         }
 
-        $this->redirect('/admin/settings?tab=cron');
+        $this->redirect('/admin/settings/cron');
     }
 
     public function regenerateCronToken(): void
     {
         Cron::regenerateToken();
         Session::flash('success', 'Cron güvenlik anahtarı (token) yenilendi. Sunucunuzda HTTP/cURL Cron kullanıyorsanız komuttaki anahtarı güncellemeyi unutmayın.');
-        $this->redirect('/admin/settings?tab=cron');
+        $this->redirect('/admin/settings/cron');
     }
 
     public function checkUpdates(): void
@@ -209,12 +235,12 @@ class SettingsController extends Controller
             Session::flash('success', 'Tebrikler! Bvlog sisteminiz güncel (v' . $result['current_version'] . ').');
         }
 
-        $this->redirect('/admin/settings?tab=updates');
+        $this->redirect('/admin/settings/updates');
     }
 
     public function applyUpdate(): void
     {
-        $force = (bool) (Request::post('force') ?? Request::input('force', false));
+        $force = (bool) (Request::post('force') ?? Request::get('force', false));
         $result = \Core\Updater::applyUpdate($force);
 
         if (Request::isAjax()) {
@@ -227,6 +253,6 @@ class SettingsController extends Controller
             Session::flash('error', 'Güncelleme başarısız: ' . ($result['error'] ?? 'Bilinmeyen hata oluştu.'));
         }
 
-        $this->redirect('/admin/settings?tab=updates');
+        $this->redirect('/admin/settings/updates');
     }
 }
