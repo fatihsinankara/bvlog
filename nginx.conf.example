@@ -1,0 +1,44 @@
+# Nginx örnek sunucu bloğu
+# .htaccess Nginx'te uygulanmaz. Hassas dizinler ve çekirdek dosyalar burada kapatılır.
+# site kökünü ve PHP soketini kendi sunucunuza göre değiştirin.
+
+server {
+    listen 80;
+    server_name example.com;
+    root /var/www/bvlog;
+    index index.php;
+
+    client_max_body_size 20m;
+
+    location ~ /\.(?!well-known) {
+        deny all;
+    }
+
+    location ~ ^/(app|core|config|resources|node_modules|dist|storage/logs|storage/cache)(/|$) {
+        deny all;
+    }
+
+    location ~ ^/(schema\.sql|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|build-release\.php|cron\.php)$ {
+        deny all;
+    }
+
+    location ~ ^/(themes|plugins|storage)/.*\.php$ {
+        deny all;
+    }
+
+    location ^~ /storage/uploads/ {
+        location ~* \.(php|phtml|phar|cgi|pl|py|sh)$ {
+            deny all;
+        }
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+}

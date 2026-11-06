@@ -1,6 +1,6 @@
 # Bvlog — Kişisel Blog, Portfolyo ve Özgeçmiş (CV) Sistemi
 
-![Version](https://img.shields.io/badge/S%C3%BCr%C3%BCm-v1.3.1-18181b?style=flat-square)
+![Version](https://img.shields.io/badge/S%C3%BCr%C3%BCm-v1.3.2-18181b?style=flat-square)
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-18181b?style=flat-square&logo=php)
 ![MySQL](https://img.shields.io/badge/MySQL%20%2F%20MariaDB-5.7%2B-18181b?style=flat-square&logo=mysql)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-18181b?style=flat-square&logo=tailwindcss)
@@ -25,16 +25,16 @@ Varsayılan olarak yalın bir kişisel blog olarak çalışır; ihtiyacınıza g
 
 ### 2. Tek Tıkla OTA Güncelleme & Otomatik Veritabanı Göçü (Auto-Migrator)
 - **GitHub Releases Entegrasyonu (`Core\Updater`)**: Yeni bir sürüm yayınlandığında yönetim panelinde bildirim gösterir ve sürüm notlarını listeler.
-- **Tek Tıkla OTA (Over-The-Air) Güncelleme**: Kullanıcı verilerinize (`config/`, `storage/`, yüklenen görseller, özel tema ve eklentileriniz) dokunmadan çekirdek dosyaları doğrudan yönetim panelinden günceller.
+- **Tek Tıkla OTA (Over-The-Air) Güncelleme**: Güncelleme paketi yönetim panelinden uygulanır. `config/database.php`, kurulum kilidi ve `storage/uploads/` korunur. Çekirdek, gömülü tema ve eklenti dosyaları paketteki sürümle güncellenir.
 - **Otomatik Şema Yükseltici (`Core\Migrator`)**: Güncelleme sonrasında yeni sürümün gerektirdiği veritabanı tablo ve sütun değişikliklerini veri kaybı olmadan otomatik olarak uygular.
 
 ### 3. Katı Güvenlik Mimarisi
 - **SQL Injection Koruması**: Tüm sorgularda `PDO` gerçek hazır ifadeleri (`ATTR_EMULATE_PREPARES = false`) kullanılır.
 - **Zorunlu CSRF Koruması**: Tüm `POST` formlarında ve AJAX isteklerinde kriptografik CSRF jetonu doğrulanır.
-- **XSS & İçerik Temizleyici (`Core\HtmlSanitizer`)**: Editörden kaydedilen HTML içerikler beyaz liste (whitelist) tabanlı DOM ayrıştırıcıdan geçirilir; `<script>`, `onload`, `onerror`, `javascript:` gibi zararlı vektörler temizlenir.
-- **Atomik Brute-Force Koruması (`Core\RateLimiter`)**: Yönetim paneli girişleri, parola sıfırlama, yorumlar ve iletişim formu IP bazlı hız sınırlandırmasına tabidir (Cloudflare `CF-Connecting-IP` gerçek ziyaretçi IP algılama destekli).
+- **XSS & İçerik Temizleyici (`Core\HtmlSanitizer`)**: Editörden kaydedilen HTML, DOM ağacı üzerinde etiket beyaz listesinden geçirilir. `<script>`, olay öznitelikleri, `javascript:` adresleri ve izinli embed kaynakları dışındaki iframe'ler düşer.
+- **Atomik Brute-Force Koruması (`Core\RateLimiter`)**: Yönetim paneli girişleri, parola sıfırlama, yorumlar ve iletişim formu IP bazlı hız sınırlandırmasına tabidir. `CF-Connecting-IP` yalnızca bağlantı Cloudflare IP aralığından geliyorsa kabul edilir; ek vekiller yönetim panelinden tanımlanır. Sayaç dosyası yazılamazsa istek reddedilir.
 - **Güvenli Görsel Yükleme (`Core\ImageProcessor`)**: Yalnızca dosya uzantısına değil, `finfo` gerçek MIME tipine ve `getimagesize()` görüntü başlığına bakılarak doğrulama yapılır; yüklenen görseller GD kütüphanesiyle yeniden oluşturularak olası zararlı EXIF/payload verilerinden arındırılır.
-- **Yönetici Parola Kurtarma**: E-posta üzerinden güvenli parola sıfırlama akışı.
+- **Yönetici Parola Kurtarma**: E-posta ile 1 saatlik tek kullanımlık bağlantı. Parola, bağlantı açılıp yeni parola kaydedilene kadar değişmez.
 
 ### 4. Zengin İçerik Editörü, Çoklu Kategori & Zamanlanmış Yazılar
 - **Sürükle-Bırak & Panodan Görsel Yapıştırma**: Editör içine `Ctrl+V` ile doğrudan görsel yapıştırma.
@@ -79,7 +79,7 @@ Varsayılan olarak yalın bir kişisel blog olarak çalışır; ihtiyacınıza g
 
 ### 8. Çok Katmanlı Dahili Önbellek Motoru (`Core\Cache`)
 - **L1 (Bellek İçi) + L2 (Dosya Tabanlı) Önbellek Mimarisi**: Harici Redis/Memcached bağımlılığı gerektirmeden standart paylaşımlı hostinglerde dahi veritabanı yükünü sıfıra indirir.
-- **Sıfır Sorgu (Zero-Query) Ön Yüz Yanıtları**: Önbellek dolu (warm) olduğunda anasayfa, blog listeleri, kategori arşivleri, koleksiyonlar, portfolyo, CV, `/sitemap.xml` ve `/rss.xml` isteklerinde MySQL bağlantısı dahi açılmaz (`PDO` lazy connection).
+- **Sıfır Sorguya Yakın Ön Yüz**: Önbellek dolu olduğunda anasayfa, blog listeleri, kategori arşivleri, koleksiyonlar, portfolyo, CV, `/sitemap.xml` ve `/rss.xml` MySQL sorgusu açmaz. Yazı detayında görüntülenme sayacı oturum çerezine yazılır ve en fazla dakikada bir toplu işlenir. Anonim liste sayfaları, form veya yönetici çerezi yoksa PHP oturumu başlatmaz.
 - **6 İzole Önbellek Grubu**: `settings` (Ayarlar & Yazar), `home` (Anasayfa Blokları), `blog` (Yazılar, Kategoriler, Etiketler, Yorumlar, İşlenmiş TOC & Seri Kutuları), `portfolio` (Projeler), `cv` (Özgeçmiş & JSON-LD) ve `feeds` (Sitemap & RSS).
 - **Akıllı Otomatik Temizleme (Auto-Invalidation)**: Yazı, kategori, yorum, proje, CV veya site ayarı güncellendiğinde veritabanı katmanı yalnızca ilgili önbellek grubunu anında otomatik olarak yeniler.
 - **Gelişmiş Önbellek Yönetim Paneli (`/admin/cache`)**:
@@ -101,7 +101,7 @@ Varsayılan olarak yalın bir kişisel blog olarak çalışır; ihtiyacınıza g
 - **PHP**: `8.1` veya üzeri (`8.2` / `8.3` / `8.4` tam uyumlu)
 - **Veritabanı**: MySQL `5.7+` veya MariaDB `10.3+`
 - **PHP Eklentileri**: `pdo_mysql`, `gd` (WebP desteğiyle), `mbstring`, `fileinfo`, `zip` (OTA güncelleme ve tema/eklenti ZIP yükleme için), `curl` veya `allow_url_fopen` (GitHub sürüm kontrolü için)
-- **Web Sunucusu**: Apache (`mod_rewrite` aktif) veya LiteSpeed / Nginx
+- **Web Sunucusu**: Apache (`mod_rewrite` aktif) veya LiteSpeed / Nginx. Nginx için depodaki `nginx.conf.example` kurallarını sunucu bloğuna ekleyin; `.htaccess` Nginx'te çalışmaz.
 
 ---
 
