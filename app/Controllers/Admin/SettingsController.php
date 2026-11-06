@@ -88,6 +88,7 @@ class SettingsController extends Controller
             Setting::set('site_logo', Request::post('site_logo', ''));
             Setting::set('site_favicon', Request::post('site_favicon', ''));
             Setting::set('posts_per_page', (string) max(1, min(50, (int) Request::post('posts_per_page', 10))));
+            Setting::set('site_url', normalize_site_url((string) Request::post('site_url', '')));
         } elseif ($tab === 'profile') {
             $author = User::firstAuthor();
             $name = Request::post('author_name', 'Yazar');
@@ -161,6 +162,7 @@ class SettingsController extends Controller
         } elseif ($tab === 'security') {
             Setting::set('maintenance_mode', Request::post('maintenance_mode') ? '1' : '0');
             Setting::set('maintenance_message', Request::post('maintenance_message', ''));
+            Setting::set('trusted_proxies', trim((string) Request::post('trusted_proxies', '')));
 
             $newPass = Request::post('new_password', '');
             $currentPass = Request::post('current_password', '');

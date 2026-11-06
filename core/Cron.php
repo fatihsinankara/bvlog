@@ -102,7 +102,7 @@ class Cron
                 }
                 return [
                     'affected' => 0,
-                    'message'  => 'Sistem güncel (v' . ($info['current_version'] ?? '1.3.1') . ').',
+                    'message'  => 'Sistem güncel (v' . ($info['current_version'] ?? '1.3.2') . ').',
                 ];
             },
         ]);
@@ -170,6 +170,11 @@ class Cron
 
         foreach (self::$tasks as $taskId => $task) {
             if ($onlyTaskId !== null && $onlyTaskId !== '' && $taskId !== $onlyTaskId) {
+                continue;
+            }
+
+            if ($trigger === 'web' && $taskId === 'check_github_updates') {
+                $skipped[] = $taskId;
                 continue;
             }
 
@@ -270,6 +275,8 @@ class Cron
             @flock($lockFp, LOCK_UN);
             fclose($lockFp);
         }
+
+        ViewCounter::flush();
 
         return [
             'success'     => $errorsCount === 0,
@@ -394,25 +401,24 @@ class Cron
     public static function getServerCommands(): array
     {
         $token = self::getToken();
-        $cronUrl = url('/cron?token=' . urlencode($token));
+        $cronUrl = url('/cron');
         $cronFile = str_replace('\\', '/', BVLOG_ROOT) . '/cron.php';
 
         $phpCli = self::detectPhpCliBinary();
+        $curl = 'curl -fsS -H ' . escapeshellarg('X-Cron-Token: ' . $token) . ' ' . escapeshellarg($cronUrl) . ' >/dev/null 2>&1';
+        $wget = 'wget -q -O - --header=' . escapeshellarg('X-Cron-Token: ' . $token) . ' ' . escapeshellarg($cronUrl) . ' >/dev/null 2>&1';
 
         return [
             'php_binary'   => $phpCli,
             'cron_file'    => $cronFile,
-            'cron_url'     => $cronUrl,
+            'cron_url'     => $cronUrl . '?token=' . urlencode($token),
             'token'        => $token,
             'os_family'    => PHP_OS_FAMILY,
-            // cPanel / DirectAdmin / Linux Crontab için önerilen PHP CLI komutu
             'cpanel_cli'   => "{$phpCli} -q {$cronFile} >/dev/null 2>&1",
             'crontab_cli'  => "* * * * * {$phpCli} -q {$cronFile} >/dev/null 2>&1",
-            // cURL ile HTTP tetikleme komutu
-            'cpanel_curl'  => "curl -s \"{$cronUrl}\" >/dev/null 2>&1",
-            'crontab_curl' => "* * * * * curl -s \"{$cronUrl}\" >/dev/null 2>&1",
-            // Wget ile alternatif HTTP tetikleme komutu
-            'cpanel_wget'  => "wget -q -O - \"{$cronUrl}\" >/dev/null 2>&1",
+            'cpanel_curl'  => $curl,
+            'crontab_curl' => '* * * * * ' . $curl,
+            'cpanel_wget'  => $wget,
         ];
     }
 
@@ -515,6 +521,13 @@ class Cron
                     }
                 }
             }
+        }
+
+        // 4. Süresi dolmuş parola sıfırlama bağlantıları
+        try {
+            $cleaned += Database::delete('password_resets', 'expires_at < :now', ['now' => date('Y-m-d H:i:s', $now)]);
+        } catch (Throwable $e) {
+            // Tablo henüz yoksa geç
         }
 
         return $cleaned;

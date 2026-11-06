@@ -126,6 +126,9 @@
                         <span x-text="copiedKey === 'cpanel_curl' ? 'Kopyalandı!' : 'Kopyala'">Kopyala</span>
                     </button>
                 </div>
+                <p class="text-[11px] text-zinc-500">
+                    Anahtar <code>X-Cron-Token</code> başlığında gider ve erişim günlüğüne düşmez. Eski <code>?token=</code> adresleri çalışmaya devam eder.
+                </p>
             </div>
 
             <!-- 3. Doğrudan Cron URL ve Güvenlik Anahtarı (Token) -->

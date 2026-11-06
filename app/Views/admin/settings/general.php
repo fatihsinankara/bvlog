@@ -66,6 +66,13 @@
                    class="w-full sm:w-48 px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
         </div>
 
+        <div>
+            <label class="block text-xs font-semibold mb-1.5">Kanonik site adresi</label>
+            <input type="url" name="site_url" value="<?= e($settings['site_url'] ?? '') ?>" placeholder="https://alanadiniz.com"
+                   class="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+            <p class="text-[11px] text-zinc-500 mt-1">Canonical, RSS ve e-posta bağlantıları bu adresi kullanır. Boşsa istekteki host başlığına düşülür.</p>
+        </div>
+
         <button type="submit" class="px-5 py-2.5 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-semibold hover:opacity-90">
             Genel Ayarları Kaydet
         </button>

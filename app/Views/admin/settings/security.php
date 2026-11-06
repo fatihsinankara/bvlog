@@ -24,6 +24,13 @@
                       class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950"><?= e($settings['maintenance_message'] ?? '') ?></textarea>
         </div>
 
+        <div>
+            <label class="block text-xs font-semibold mb-1.5">Güvenilen vekil adresleri</label>
+            <textarea name="trusted_proxies" rows="3" placeholder="127.0.0.1&#10;10.0.0.0/8"
+                      class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950"><?= e($settings['trusted_proxies'] ?? '') ?></textarea>
+            <p class="text-[11px] text-zinc-500 mt-1">Cloudflare IP aralıkları hazırdır. Ek ters vekil (localhost nginx, yük dengeleyici) kullanıyorsanız onun bağlandığı IP veya CIDR değerini yazın. Bu liste dışındaki isteklere gelen X-Forwarded-For başlığı yok sayılır.</p>
+        </div>
+
         <div class="border-t border-zinc-100 dark:border-zinc-800 pt-4 space-y-4">
             <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Yönetici Parolasını Değiştir</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -164,6 +164,7 @@ class InstallController extends Controller
 
             $defaultSettings = [
                 'site_title'          => $siteTitle,
+                'site_url'            => base_url(),
                 'site_tagline'        => $siteTagline,
                 'site_description'    => $siteTitle . ' — ' . $siteTagline,
                 'author_name'         => $adminName,
