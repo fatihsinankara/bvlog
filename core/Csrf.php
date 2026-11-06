@@ -40,4 +40,10 @@ class Csrf
 
         return hash_equals($sessionToken, $token);
     }
+
+    public static function rotate(): void
+    {
+        Session::start();
+        Session::set(self::TOKEN_KEY, bin2hex(random_bytes(32)));
+    }
 }

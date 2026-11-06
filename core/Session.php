@@ -21,11 +21,26 @@ class Session
 
             session_name('BVLOG_SESSION');
             session_start();
+            self::touchActivity();
         }
+    }
+
+    private static function touchActivity(): void
+    {
+        $now = time();
+        $last = (int) ($_SESSION['_last_activity'] ?? $now);
+        $idleLimit = 60 * 60 * 12;
+        if (isset($_SESSION['admin_user_id']) && ($now - $last) > $idleLimit) {
+            unset($_SESSION['admin_user_id'], $_SESSION['admin_user_name']);
+        }
+        $_SESSION['_last_activity'] = $now;
     }
 
     public static function get(string $key, mixed $default = null): mixed
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return $default;
+        }
         return $_SESSION[$key] ?? $default;
     }
 
@@ -36,6 +51,9 @@ class Session
 
     public static function has(string $key): bool
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return false;
+        }
         return isset($_SESSION[$key]);
     }
 

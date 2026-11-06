@@ -4,25 +4,31 @@ namespace Core;
 
 class RateLimiter
 {
+    private static ?string $baseDir = null;
+
+    public static function setBaseDir(?string $dir): void
+    {
+        self::$baseDir = $dir;
+    }
+
     private static function getStoragePath(): string
     {
-        $dir = BVLOG_ROOT . '/storage/logs';
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
+        $dir = self::$baseDir ?? (BVLOG_ROOT . '/storage/logs');
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+            return $dir . '/ratelimit.json';
         }
         return $dir . '/ratelimit.json';
     }
 
     /**
-     * Dosya tabanlı atomik kilit mekanizması ve çöp toplama (garbage collection)
+     * Dosya tabanlı atomik kilit. Kilit alınamazsa $failValue döner (istek sayılmaz, geçiş yok).
      */
-    private static function withLock(callable $callback): mixed
+    private static function withLock(callable $callback, mixed $failValue): mixed
     {
         $file = self::getStoragePath();
         $handle = @fopen($file, 'c+');
         if (!$handle) {
-            $dummy = [];
-            return $callback($dummy);
+            return $failValue;
         }
 
         flock($handle, LOCK_EX);
@@ -67,18 +73,16 @@ class RateLimiter
 
     public static function tooManyAttempts(string $key, int $maxAttempts = 5, int $decaySeconds = 900): bool
     {
-        $data = self::readData();
-        $now = time();
-
-        if (!isset($data[$key])) {
-            return false;
-        }
-
-        if ($now - $data[$key]['first_attempt'] > $decaySeconds) {
-            return false;
-        }
-
-        return $data[$key]['attempts'] >= $maxAttempts;
+        return (bool) self::withLock(function (array &$data) use ($key, $maxAttempts, $decaySeconds) {
+            $now = time();
+            if (!isset($data[$key])) {
+                return false;
+            }
+            if ($now - $data[$key]['first_attempt'] > $decaySeconds) {
+                return false;
+            }
+            return $data[$key]['attempts'] >= $maxAttempts;
+        }, true);
     }
 
     public static function hit(string $key, int $decaySeconds = 900): int
@@ -94,7 +98,7 @@ class RateLimiter
                 $data[$key]['attempts']++;
             }
             return $data[$key]['attempts'];
-        });
+        }, PHP_INT_MAX);
     }
 
     public static function clear(string $key): void
@@ -102,7 +106,7 @@ class RateLimiter
         self::withLock(function (array &$data) use ($key) {
             unset($data[$key]);
             return null;
-        });
+        }, null);
     }
 
     public static function availableIn(string $key, int $decaySeconds = 900): int

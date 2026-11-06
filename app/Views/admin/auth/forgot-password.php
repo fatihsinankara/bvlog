@@ -36,7 +36,7 @@ $siteTitle = setting('site_title', 'Bvlog');
             <a href="<?= e(url('/')) ?>" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-base font-extrabold">B</a>
             <h1 class="text-xl font-bold tracking-tight">Parolamı Unuttum</h1>
             <p class="text-xs text-zinc-500 max-w-xs mx-auto leading-relaxed">
-                Kayıtlı kullanıcı adınızı veya e-posta adresinizi girin. Size e-posta ile yeni bir parola ileteceğiz.
+                Kayıtlı kullanıcı adınızı veya e-posta adresinizi girin. Eşleşen bir hesap varsa size 1 saat geçerli bir sıfırlama bağlantısı gönderilir. Parolanız bağlantıyı açana kadar değişmez.
             </p>
         </div>
 
@@ -67,7 +67,7 @@ $siteTitle = setting('site_title', 'Bvlog');
 
             <button type="submit" class="w-full py-2.5 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
                 <i class="fa-regular fa-paper-plane"></i>
-                <span>Yeni Parolamı Gönder</span>
+                <span>Sıfırlama Bağlantısı Gönder</span>
             </button>
         </form>
 

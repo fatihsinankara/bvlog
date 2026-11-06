@@ -52,6 +52,13 @@ class ImageProcessor
             throw new Exception('Yalnızca JPEG, PNG, WebP ve GIF formatındaki görseller kabul edilir.');
         }
 
+        $info = @getimagesize($tmpPath);
+        $pixelW = (int) ($info[0] ?? 0);
+        $pixelH = (int) ($info[1] ?? 0);
+        if ($pixelW < 1 || $pixelH < 1 || $pixelW > 8192 || $pixelH > 8192 || ($pixelW * $pixelH) > 24000000) {
+            throw new Exception('Görsel çözünürlüğü desteklenen sınırı aşıyor (en fazla 8192 px ve 24 megapiksel).');
+        }
+
         $src = match ($mime) {
             'image/jpeg' => @imagecreatefromjpeg($tmpPath),
             'image/png'  => @imagecreatefrompng($tmpPath),

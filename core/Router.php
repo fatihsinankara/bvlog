@@ -47,8 +47,7 @@ class Router
                     Response::json(['success' => false, 'message' => 'Güvenlik doğrulaması (CSRF) başarısız oldu. Sayfayı yenileyin.'], 403);
                 }
                 Session::flash('error', 'Güvenlik anahtarı (CSRF) süresi doldu veya geçersiz. Lütfen tekrar deneyin.');
-                $referer = $_SERVER['HTTP_REFERER'] ?? '/';
-                Response::redirect($referer);
+                Response::redirect(Response::sameOriginPath('/'));
             }
         }
 

@@ -19,7 +19,7 @@
         </h1>
 
         <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            <?= $message ?? '' ?>
+            <?= e($message ?? '') ?>
         </p>
 
         <div class="pt-3">

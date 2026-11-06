@@ -72,7 +72,11 @@ class Database
 
     public static function insert(string $table, array $data): int
     {
+        self::assertIdentifier($table);
         $columns = array_keys($data);
+        foreach ($columns as $column) {
+            self::assertIdentifier((string) $column);
+        }
         $placeholders = array_map(fn($col) => ":{$col}", $columns);
 
         $sql = sprintf(
@@ -90,9 +94,11 @@ class Database
 
     public static function update(string $table, array $data, string $where, array $whereParams = []): int
     {
+        self::assertIdentifier($table);
         $sets = [];
         $params = [];
         foreach ($data as $col => $val) {
+            self::assertIdentifier((string) $col);
             $sets[] = "`{$col}` = :set_{$col}";
             $params["set_{$col}"] = $val;
         }
@@ -112,9 +118,17 @@ class Database
 
     public static function delete(string $table, string $where, array $params = []): int
     {
+        self::assertIdentifier($table);
         $sql = sprintf('DELETE FROM `%s` WHERE %s', $table, $where);
         $affected = self::query($sql, $params)->rowCount();
         Cache::invalidateByTable($table);
         return $affected;
+    }
+
+    private static function assertIdentifier(string $name): void
+    {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $name)) {
+            throw new \InvalidArgumentException('Geçersiz SQL tanımlayıcısı.');
+        }
     }
 }

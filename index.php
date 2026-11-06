@@ -13,9 +13,17 @@ date_default_timezone_set($appConfig['timezone'] ?? 'Europe/Istanbul');
 Core\ErrorHandler::register((bool) ($appConfig['debug'] ?? false));
 
 Core\Security::sendHeaders();
-Core\Session::start();
 
 $currentPath = Core\Request::path();
+$hasSessionCookie = isset($_COOKIE['BVLOG_SESSION']) && $_COOKIE['BVLOG_SESSION'] !== '';
+if (
+    $hasSessionCookie
+    || Core\Request::method() === 'POST'
+    || str_starts_with($currentPath, '/admin')
+    || str_starts_with($currentPath, '/install')
+) {
+    Core\Session::start();
+}
 
 // 1. Kurulum Kontrolü
 if (!is_installed()) {
@@ -31,7 +39,7 @@ if (!is_installed()) {
 }
 
 // 2. Sürüm & Veritabanı Otomatik Yükseltme Kontrolü (FTP Güncellemeleri İçin)
-Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.3.1');
+Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.3.2');
 
 // 3. Eklentileri Yükle (Hata korumalı ve otomatik karantina destekli)
 Core\PluginManager::boot();
@@ -80,6 +88,8 @@ Core\Router::get('/admin/login', [App\Controllers\Admin\AuthController::class, '
 Core\Router::post('/admin/login', [App\Controllers\Admin\AuthController::class, 'login'], ['guest']);
 Core\Router::get('/admin/forgot-password', [App\Controllers\Admin\AuthController::class, 'showForgotPassword'], ['guest']);
 Core\Router::post('/admin/forgot-password', [App\Controllers\Admin\AuthController::class, 'sendResetPassword'], ['guest']);
+Core\Router::get('/admin/reset-password', [App\Controllers\Admin\AuthController::class, 'showResetPassword'], ['guest']);
+Core\Router::post('/admin/reset-password', [App\Controllers\Admin\AuthController::class, 'resetPassword'], ['guest']);
 Core\Router::post('/admin/logout', [App\Controllers\Admin\AuthController::class, 'logout'], ['auth']);
 
 Core\Router::get('/admin', [App\Controllers\Admin\DashboardController::class, 'index'], ['auth']);

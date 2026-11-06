@@ -4,6 +4,8 @@ namespace App\Controllers\Admin;
 
 use App\Models\User;
 use Core\Controller;
+use Core\Csrf;
+use Core\Database;
 use Core\RateLimiter;
 use Core\Request;
 use Core\Security;
@@ -45,8 +47,15 @@ class AuthController extends Controller
             $this->redirect('/admin/login');
         }
 
+        if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
+            User::updateById((int) $user['id'], [
+                'password_hash' => Security::hashPassword($password),
+            ]);
+        }
+
         RateLimiter::clear($rateKey);
         Session::regenerate();
+        Csrf::rotate();
         Session::set('admin_user_id', (int) $user['id']);
         Session::set('admin_user_name', $user['name']);
 
@@ -84,95 +93,114 @@ class AuthController extends Controller
         }
 
         $identity = trim(Request::post('identity', ''));
+        RateLimiter::hit($rateKey, 900);
+
+        $generic = 'Bu bilgiler bir yönetici hesabıyla eşleşiyorsa, parola sıfırlama bağlantısı kayıtlı e-posta adresine gönderildi. Bağlantı 1 saat geçerlidir.';
         if ($identity === '') {
-            Session::flash('error', 'Lütfen kullanıcı adı veya e-posta adresinizi girin.');
-            $this->redirect('/admin/forgot-password');
+            Session::flash('success', $generic);
+            $this->redirect('/admin/login');
         }
 
         $user = User::findByEmailOrUsername($identity);
-        if (!$user) {
-            RateLimiter::hit($rateKey, 900);
-            Session::flash('error', 'Bu kullanıcı adı veya e-posta adresiyle eşleşen bir yönetici hesabı bulunamadı.');
-            $this->redirect('/admin/forgot-password');
-        }
-
         $userEmail = trim((string) ($user['email'] ?? ''));
-        if ($userEmail === '' || !filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
-            Session::flash('error', 'Bu kullanıcı hesabına tanımlı geçerli bir e-posta adresi bulunmadığından parola sıfırlanamıyor.');
-            $this->redirect('/admin/forgot-password');
+        if (!$user || $userEmail === '' || !filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
+            Session::flash('success', $generic);
+            $this->redirect('/admin/login');
         }
 
-        // 10 karakterlik güvenli, okunaklı yeni parola üret
-        $chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789#@%';
-        $newPassword = substr(str_shuffle(str_repeat($chars, 3)), 0, 10);
-
-        // Veritabanındaki parolayı güncelle
-        User::updateById((int) $user['id'], [
-            'password_hash' => Security::hashPassword($newPassword),
+        $token = bin2hex(random_bytes(32));
+        $expires = date('Y-m-d H:i:s', time() + 3600);
+        Database::query('DELETE FROM password_resets WHERE user_id = :id', ['id' => (int) $user['id']]);
+        Database::insert('password_resets', [
+            'user_id'    => (int) $user['id'],
+            'token_hash' => hash('sha256', $token),
+            'expires_at' => $expires,
         ]);
 
-        RateLimiter::clear($rateKey);
-
-        // E-posta içeriği hazırla
         $siteTitle = setting('site_title', 'Bvlog');
-        $userName = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-        $loginUrl = url('/admin/login');
+        $userName = htmlspecialchars((string) $user['name'], ENT_QUOTES, 'UTF-8');
+        $resetUrl = url('/admin/reset-password?token=' . $token);
         $date = date('d.m.Y H:i');
-
-        $mailSubject = "Yeni Yönetici Parolanız — {$siteTitle}";
+        $mailSubject = "Parola sıfırlama bağlantısı — {$siteTitle}";
         $htmlBody = <<<HTML
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px; border: 1px solid #e4e4e7; border-radius: 12px; background: #ffffff; color: #18181b;">
-    <div style="margin-bottom: 20px; border-bottom: 2px solid #18181b; padding-bottom: 12px;">
-        <h2 style="margin: 0; font-size: 18px; color: #18181b;">{$siteTitle} Yönetim Paneli</h2>
-        <span style="font-size: 12px; color: #71717a;">Parola Sıfırlama Bildirimi &middot; {$date}</span>
-    </div>
-
-    <p style="font-size: 14px; line-height: 1.6; margin: 0 0 16px;">
-        Merhaba <strong>{$userName}</strong>,
-    </p>
-
-    <p style="font-size: 13px; line-height: 1.6; color: #3f3f46; margin: 0 0 20px;">
-        Yönetici hesabınız için yeni bir parola talebinde bulunuldu. Hesabınıza giriş yapabilmeniz için sistem tarafından geçici bir parola oluşturuldu:
-    </p>
-
-    <div style="background: #f4f4f5; border: 1px dashed #a1a1aa; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 24px;">
-        <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #71717a; margin-bottom: 4px;">Yeni Parolanız</div>
-        <div style="font-size: 22px; font-weight: bold; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 2px; color: #09090b;">
-            {$newPassword}
-        </div>
-    </div>
-
-    <div style="text-align: center; margin-bottom: 24px;">
-        <a href="{$loginUrl}" style="display: inline-block; padding: 11px 24px; font-size: 13px; font-weight: 600; color: #ffffff; background: #18181b; border-radius: 8px; text-decoration: none;">
-            Yönetim Paneline Giriş Yap &rarr;
-        </a>
-    </div>
-
-    <div style="font-size: 12px; line-height: 1.6; color: #71717a; border-top: 1px solid #f4f4f5; padding-top: 16px;">
-        <p style="margin: 0 0 6px;"><strong>Güvenlik Tavsiyesi:</strong> Giriş yaptıktan sonra parolanızı <em>Ayarlar & Profil</em> menüsünden kendi belirleyeceğiniz kalıcı bir parola ile değiştirmeniz önemle tavsiye edilir.</p>
-        <p style="margin: 0;">Bu talebi siz yapmadıysanız lütfen derhal giriş yaparak parolanızı güncelleyin.</p>
-    </div>
+    <h2 style="margin: 0 0 12px; font-size: 18px;">{$siteTitle}</h2>
+    <p style="font-size: 14px; line-height: 1.6;">Merhaba <strong>{$userName}</strong>,</p>
+    <p style="font-size: 13px; line-height: 1.6; color: #3f3f46;">Hesabınız için parola sıfırlama istendi ({$date}). Parola ancak aşağıdaki bağlantıyı açıp yeni bir parola belirlediğinizde değişir. Bağlantı 1 saat geçerlidir.</p>
+    <p style="margin: 24px 0;"><a href="{$resetUrl}" style="display: inline-block; padding: 11px 24px; font-size: 13px; font-weight: 600; color: #ffffff; background: #18181b; border-radius: 8px; text-decoration: none;">Yeni parola belirle</a></p>
+    <p style="font-size: 12px; color: #71717a;">Bu isteği siz yapmadıysanız e-postayı yok sayın. Mevcut parolanız değişmez.</p>
 </div>
 HTML;
 
-        // E-postayı gönder (bvlog_mail varsa kullan, yoksa mail())
-        $sent = function_exists('bvlog_mail')
-            ? bvlog_mail($userEmail, $mailSubject, $htmlBody)
-            : @mail($userEmail, '=?UTF-8?B?' . base64_encode($mailSubject) . '?=', $htmlBody, "MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom: {$siteTitle} <noreply@" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . ">\r\n");
-
-        // E-posta adresini maskele (örn: a***n@site.com)
-        $parts = explode('@', $userEmail);
-        $namePart = $parts[0];
-        $maskedName = mb_substr($namePart, 0, 1) . str_repeat('*', max(2, mb_strlen($namePart) - 2)) . mb_substr($namePart, -1);
-        $maskedEmail = $maskedName . '@' . ($parts[1] ?? '');
-
-        if ($sent) {
-            Session::flash('success', "Yeni parolanız kayıtlı e-posta adresinize ({$maskedEmail}) başarıyla gönderildi. Lütfen gelen kutunuzu (ve gerekiyorsa spam klasörünü) kontrol edin.");
+        $host = parse_url(base_url(), PHP_URL_HOST) ?: 'localhost';
+        if (function_exists('bvlog_mail')) {
+            bvlog_mail($userEmail, $mailSubject, $htmlBody);
         } else {
-            // E-posta iletilemediyse bile parola değişti; kullanıcıya bilgi ver
-            Session::flash('error', "Parolanız sıfırlandı ancak e-posta sunucusuna ulaşılamadı. Lütfen SMTP ayarlarını kontrol edin veya sistem yöneticinize danışın.");
+            @mail(
+                $userEmail,
+                '=?UTF-8?B?' . base64_encode($mailSubject) . '?=',
+                $htmlBody,
+                "MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom: {$siteTitle} <noreply@{$host}>\r\n"
+            );
         }
 
+        Session::flash('success', $generic);
         $this->redirect('/admin/login');
+    }
+
+    public function showResetPassword(): void
+    {
+        $token = (string) Request::get('token', '');
+        $valid = $this->findResetToken($token) !== null;
+        View::render('admin/auth/reset-password', [
+            'meta'  => ['title' => 'Yeni Parola'],
+            'token' => $valid ? $token : '',
+            'valid' => $valid,
+        ], null);
+    }
+
+    public function resetPassword(): void
+    {
+        $ip = Security::getClientIp();
+        $rateKey = 'admin_reset_' . $ip;
+        if (RateLimiter::tooManyAttempts($rateKey, 8, 900)) {
+            Session::flash('error', 'Çok fazla deneme. Lütfen daha sonra tekrar deneyin.');
+            $this->redirect('/admin/forgot-password');
+        }
+        RateLimiter::hit($rateKey, 900);
+
+        $token = (string) Request::post('token', '');
+        $password = (string) Request::post('password', '');
+        $confirm = (string) Request::post('password_confirm', '');
+        $row = $this->findResetToken($token);
+
+        if (!$row) {
+            Session::flash('error', 'Sıfırlama bağlantısı geçersiz veya süresi dolmuş.');
+            $this->redirect('/admin/forgot-password');
+        }
+        if (strlen($password) < 8 || $password !== $confirm) {
+            Session::flash('error', 'Parola en az 8 karakter olmalı ve iki alan eşleşmelidir.');
+            $this->redirect('/admin/reset-password?token=' . urlencode($token));
+        }
+
+        User::updateById((int) $row['user_id'], [
+            'password_hash' => Security::hashPassword($password),
+        ]);
+        Database::query('DELETE FROM password_resets WHERE user_id = :id', ['id' => (int) $row['user_id']]);
+        RateLimiter::clear('admin_login_' . $ip);
+
+        Session::flash('success', 'Parolanız güncellendi. Yeni parolanızla giriş yapabilirsiniz.');
+        $this->redirect('/admin/login');
+    }
+
+    private function findResetToken(string $token): ?array
+    {
+        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+            return null;
+        }
+        return Database::fetchOne(
+            'SELECT * FROM password_resets WHERE token_hash = :h AND expires_at > :now LIMIT 1',
+            ['h' => hash('sha256', $token), 'now' => date('Y-m-d H:i:s')]
+        );
     }
 }

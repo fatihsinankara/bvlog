@@ -122,7 +122,7 @@ class NewsletterPublicController extends Controller
             'pageTitle'  => 'Bülten Aboneliğiniz Doğrulandı',
             'status'     => 'verified',
             'heading'    => 'E-posta Adresiniz Doğrulandı!',
-            'message'    => htmlspecialchars($subscriber['email'], ENT_QUOTES, 'UTF-8') . ' adresi için bülten aboneliğiniz başarıyla aktif edildi.',
+            'message'    => ($subscriber['email'] ?? '') . ' adresi için bülten aboneliğiniz başarıyla aktif edildi.',
             'subscriber' => $subscriber,
         ]);
     }
@@ -157,7 +157,7 @@ class NewsletterPublicController extends Controller
             'pageTitle'  => 'Abonelikten Ayrıldınız',
             'status'     => 'unsubscribed',
             'heading'    => 'Bülten Aboneliğiniz Sonlandırıldı',
-            'message'    => htmlspecialchars($subscriber['email'], ENT_QUOTES, 'UTF-8') . ' adresine yönelik elektronik ileti izniniz iptal edilmiş ve bülten gönderimi durdurulmuştur.',
+            'message'    => ($subscriber['email'] ?? '') . ' adresine yönelik elektronik ileti izniniz iptal edilmiş ve bülten gönderimi durdurulmuştur.',
             'subscriber' => $subscriber,
         ]);
     }
@@ -172,8 +172,6 @@ class NewsletterPublicController extends Controller
         }
 
         Session::flash($success ? 'success' : 'error', $message);
-        $referer = $_SERVER['HTTP_REFERER'] ?? url('/');
-        header('Location: ' . $referer);
-        exit;
+        \Core\Response::redirect(\Core\Response::sameOriginPath('/'));
     }
 }
