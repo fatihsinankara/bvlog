@@ -95,7 +95,7 @@ $authorAvatar = $author['avatar'] ?? '';
                         <?php endif; ?>
                         <div class="flex items-center gap-4 text-xs text-zinc-500">
                             <span><i class="fa-regular fa-calendar mr-1"></i><?= e(format_date($heroPost['published_at'] ?: $heroPost['created_at'])) ?></span>
-                            <span><i class="fa-regular fa-clock mr-1"></i><?= reading_time($heroPost['content']) ?> dk okuma</span>
+                            <span><i class="fa-regular fa-clock mr-1"></i><?= post_reading_minutes($heroPost) ?> dk okuma</span>
                         </div>
                     </div>
                 </section>
@@ -153,7 +153,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                             ]) ?>
                                         <?php endforeach; ?>
                                     </div>
-                                    <span class="text-xs text-zinc-500 shrink-0"><?= reading_time($fp['content']) ?> dk okuma</span>
+                                    <span class="text-xs text-zinc-500 shrink-0"><?= post_reading_minutes($fp) ?> dk okuma</span>
                                 </div>
                                 <h3 class="text-base font-bold tracking-tight mb-2">
                                     <a href="<?= e(post_url($fp)) ?>" class="hover:underline">
@@ -234,7 +234,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                         <?php endif; ?>
                                     </div>
                                     <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
-                                        <span><i class="fa-regular fa-clock mr-1"></i><?= reading_time($post['content']) ?> dk okuma</span>
+                                        <span><i class="fa-regular fa-clock mr-1"></i><?= post_reading_minutes($post) ?> dk okuma</span>
                                         <a href="<?= e(post_url($post)) ?>" class="font-semibold text-zinc-900 dark:text-zinc-100">Devamını Oku &rarr;</a>
                                     </div>
                                 </div>
@@ -250,7 +250,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                     <div class="flex flex-wrap items-center gap-2.5 text-xs text-zinc-500">
                                         <time><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></time>
                                         <span>&middot;</span>
-                                        <span><?= reading_time($post['content']) ?> dk okuma</span>
+                                        <span><?= post_reading_minutes($post) ?> dk okuma</span>
                                         <?php if (!empty($post['categories'])): ?>
                                             <span>&middot;</span>
                                             <div class="inline-flex flex-wrap items-center gap-1.5">

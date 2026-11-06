@@ -101,7 +101,8 @@ class Collection
             $where .= " AND p.status = 'published'";
         }
 
-        $sql = "SELECT p.*, cp.sort_order AS part_order, cat.name AS category_name, cat.slug AS category_slug
+        $sql = "SELECT p.id, p.title, p.slug, p.summary, p.status, p.published_at, p.created_at, p.reading_minutes, p.category_id,
+                       cp.sort_order AS part_order, cat.name AS category_name, cat.slug AS category_slug
                 FROM collection_posts cp
                 INNER JOIN posts p ON p.id = cp.post_id
                 LEFT JOIN categories cat ON cat.id = p.category_id
@@ -116,12 +117,13 @@ class Collection
      */
     public static function getTotalReadingTime(int $collectionId): int
     {
-        $posts = self::getPosts($collectionId, true);
-        $totalMinutes = 0;
-        foreach ($posts as $post) {
-            $totalMinutes += reading_time($post['content'] ?? '');
-        }
-        return $totalMinutes;
+        return (int) Database::fetchColumn(
+            "SELECT COALESCE(SUM(p.reading_minutes), 0)
+             FROM collection_posts cp
+             INNER JOIN posts p ON p.id = cp.post_id
+             WHERE cp.collection_id = :cid AND p.status = 'published'",
+            ['cid' => $collectionId]
+        );
     }
 
     /**

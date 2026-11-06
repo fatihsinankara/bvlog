@@ -114,7 +114,7 @@ $hasImg = !empty($collection['cover_image']);
                                         <?= format_date($p['published_at'] ?: $p['created_at']) ?>
                                     </time>
                                     <span>&middot;</span>
-                                    <span><i class="fa-regular fa-clock mr-1"></i><?= reading_time($p['content'] ?? '') ?> dk</span>
+                                    <span><i class="fa-regular fa-clock mr-1"></i><?= post_reading_minutes($p) ?> dk</span>
                                 </div>
 
                                 <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">

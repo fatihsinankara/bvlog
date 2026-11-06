@@ -68,7 +68,7 @@ $authorAvatar = $author['avatar'] ?? '';
                             <?php endif; ?>
                             <span><?= e(format_date($fPost['published_at'] ?: $fPost['created_at'])) ?></span>
                             <span>&middot;</span>
-                            <span><?= reading_time($fPost['content']) ?> dk</span>
+                            <span><?= post_reading_minutes($fPost) ?> dk</span>
                         </div>
                         <h2 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
                             <a href="<?= e(post_url($fPost)) ?>" class="hover:underline">
@@ -123,7 +123,7 @@ $authorAvatar = $author['avatar'] ?? '';
                                 </a>
                                 <span>&middot;</span>
                             <?php endif; ?>
-                            <span><?= reading_time($post['content']) ?> dk okuma</span>
+                            <span><?= post_reading_minutes($post) ?> dk okuma</span>
                         </div>
                     </article>
                 <?php endforeach; ?>

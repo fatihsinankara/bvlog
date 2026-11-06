@@ -90,7 +90,7 @@ use Core\View;
                         <div class="flex flex-wrap items-center gap-2.5 text-xs text-zinc-500">
                             <time><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></time>
                             <span>&middot;</span>
-                            <span><?= reading_time($post['content']) ?> dk okuma</span>
+                            <span><?= post_reading_minutes($post) ?> dk okuma</span>
                             <?php if (!empty($post['categories'])): ?>
                                 <span>&middot;</span>
                                 <div class="inline-flex flex-wrap items-center gap-1.5">

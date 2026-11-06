@@ -124,7 +124,7 @@ $isLong = count($posts) > $threshold;
                                 </span>
                             <?php else: ?>
                                 <span class="text-zinc-400 text-xs hidden sm:inline">
-                                    <i class="fa-regular fa-clock mr-1"></i><?= reading_time($p['content'] ?? '') ?> dk
+                                    <i class="fa-regular fa-clock mr-1"></i><?= post_reading_minutes($p) ?> dk
                                 </span>
                             <?php endif; ?>
                         </div>

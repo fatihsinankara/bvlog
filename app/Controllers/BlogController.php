@@ -9,7 +9,6 @@ use App\Models\Setting;
 use App\Models\User;
 use Core\Cache;
 use Core\Controller;
-use Core\Database;
 use Core\Hook;
 use Core\RateLimiter;
 use Core\Request;
@@ -18,6 +17,7 @@ use Core\Router;
 use Core\Security;
 use Core\Seo;
 use Core\Session;
+use Core\ViewCounter;
 
 class BlogController extends Controller
 {
@@ -49,7 +49,13 @@ class BlogController extends Controller
         }
 
         $totalPages = (int) ceil($total / $perPage);
-        $categories = Category::allWithCounts();
+        $categories = Cache::remember(
+            'blog:category_counts',
+            static fn (): array => Category::allWithCounts(),
+            null,
+            'blog',
+            'Kategori sayaçları'
+        );
 
         $this->view('blog/index', [
             'posts'          => $posts,
@@ -99,7 +105,13 @@ class BlogController extends Controller
         $posts = $catData['posts'];
         $total = (int) $catData['total'];
         $totalPages = (int) ceil($total / $perPage);
-        $categories = Category::allWithCounts();
+        $categories = Cache::remember(
+            'blog:category_counts',
+            static fn (): array => Category::allWithCounts(),
+            null,
+            'blog',
+            'Kategori sayaçları'
+        );
 
         $this->view('blog/index', [
             'posts'          => $posts,
@@ -166,11 +178,7 @@ class BlogController extends Controller
             }
         }
 
-        // Görüntülenme sayısını oturum başına bir kez artır
-        $viewedKey = 'viewed_post_' . $post['id'];
-        if (!Session::has($viewedKey)) {
-            Database::query('UPDATE posts SET views_count = views_count + 1 WHERE id = :id', ['id' => $post['id']]);
-            Session::set($viewedKey, true);
+        if (ViewCounter::record((int) $post['id'])) {
             $post['views_count']++;
         }
 

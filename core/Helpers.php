@@ -20,12 +20,42 @@ if (!function_exists('is_installed')) {
     }
 }
 
+if (!function_exists('normalize_site_url')) {
+    function normalize_site_url(string $url): string
+    {
+        $url = trim($url);
+        if ($url === '' || preg_match('/[\r\n\s]/', $url)) {
+            return '';
+        }
+        if (!preg_match('#^https?://#i', $url)) {
+            $url = 'https://' . $url;
+        }
+        $parts = parse_url($url);
+        if (!is_array($parts) || empty($parts['host']) || !preg_match('/^[A-Za-z0-9.\-]+$/', (string) $parts['host'])) {
+            return '';
+        }
+        $scheme = strtolower((string) $parts['scheme']) === 'http' ? 'http' : 'https';
+        $port = isset($parts['port']) ? ':' . (int) $parts['port'] : '';
+        $path = isset($parts['path']) ? rtrim((string) $parts['path'], '/') : '';
+        return $scheme . '://' . $parts['host'] . $port . $path;
+    }
+}
+
 if (!function_exists('base_url')) {
     function base_url(): string
     {
+        $configured = function_exists('setting') ? (string) setting('site_url', '') : '';
+        $normalized = normalize_site_url($configured);
+        if ($normalized !== '') {
+            return $normalized;
+        }
+
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
             || ($_SERVER['SERVER_PORT'] ?? 80) == 443 ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'bvlog.test';
+        $host = (string) ($_SERVER['HTTP_HOST'] ?? 'localhost');
+        if (!preg_match('/^[A-Za-z0-9.\-:\[\]]+$/', $host)) {
+            $host = 'localhost';
+        }
         return "{$scheme}://{$host}";
     }
 }
@@ -149,6 +179,20 @@ if (!function_exists('reading_time')) {
         $minutes = (int) ceil($words / 200);
         $minutes = max(1, $minutes);
         return (int) Hook::applyFilters('reading_time', $minutes, $content);
+    }
+}
+
+if (!function_exists('post_reading_minutes')) {
+    function post_reading_minutes(array $post): int
+    {
+        $stored = (int) ($post['reading_minutes'] ?? 0);
+        if ($stored > 0) {
+            return $stored;
+        }
+        if (!empty($post['content'])) {
+            return reading_time((string) $post['content']);
+        }
+        return 1;
     }
 }
 

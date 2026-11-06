@@ -85,7 +85,7 @@ use Core\View;
                             </a>
                             <span>&middot;</span>
                         <?php endif; ?>
-                        <span><?= reading_time($post['content']) ?> dk okuma</span>
+                        <span><?= post_reading_minutes($post) ?> dk okuma</span>
                     </div>
                 </article>
             <?php endforeach; ?>

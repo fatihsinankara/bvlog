@@ -115,7 +115,7 @@ class SeoController extends Controller
         foreach ($posts as $post) {
             $postUrl = post_url($post);
             $pubDate = date(DATE_RSS, strtotime($post['published_at'] ?: $post['created_at']));
-            $summary = $post['summary'] ?: mb_substr(strip_tags($post['content']), 0, 240);
+            $summary = $post['summary'] ?? '';
 
             $xml .= "    <item>\n";
             $xml .= '      <title>' . e($post['title']) . "</title>\n";

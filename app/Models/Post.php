@@ -21,23 +21,44 @@ class Post extends Model
         }
 
         if (!empty($search)) {
-            $where[] = '(p.title LIKE :q1 OR p.summary LIKE :q2 OR p.content LIKE :q3)';
-            $params['q1'] = "%{$search}%";
-            $params['q2'] = "%{$search}%";
-            $params['q3'] = "%{$search}%";
+            $term = trim(preg_replace('/[+\-<>()~*"@]+/u', ' ', $search) ?? '');
+            if (mb_strlen($term) >= 3) {
+                $where[] = 'MATCH(p.title, p.summary, p.content) AGAINST (:q IN NATURAL LANGUAGE MODE)';
+                $params['q'] = $term;
+            } else {
+                $where[] = '(p.title LIKE :q1 OR p.summary LIKE :q2)';
+                $params['q1'] = '%' . $search . '%';
+                $params['q2'] = '%' . $search . '%';
+            }
         }
 
         $whereSql = implode(' AND ', $where);
-        $posts = Database::fetchAll(
-            "SELECT p.*, c.name AS category_name, c.slug AS category_slug, c.icon AS category_icon, c.color AS category_color, u.name AS author_name
-             FROM posts p
-             LEFT JOIN categories c ON c.id = p.category_id
-             LEFT JOIN users u ON u.id = p.user_id
-             WHERE {$whereSql}
-             ORDER BY COALESCE(p.published_at, p.created_at) DESC, p.id DESC
-             LIMIT {$limit} OFFSET {$offset}",
-            $params
-        );
+        try {
+            $posts = Database::fetchAll(
+                'SELECT ' . self::listColumns() . "
+                 WHERE {$whereSql}
+                 ORDER BY COALESCE(p.published_at, p.created_at) DESC, p.id DESC
+                 LIMIT {$limit} OFFSET {$offset}",
+                $params
+            );
+        } catch (\Throwable $e) {
+            if (empty($search)) {
+                throw $e;
+            }
+            $where = array_values(array_filter($where, static fn ($part) => !str_contains($part, 'MATCH(')));
+            $params = array_diff_key($params, ['q' => true]);
+            $like = '%' . $search . '%';
+            $where[] = '(p.title LIKE :q1 OR p.summary LIKE :q2)';
+            $params['q1'] = $like;
+            $params['q2'] = $like;
+            $posts = Database::fetchAll(
+                'SELECT ' . self::listColumns() . '
+                 WHERE ' . implode(' AND ', $where) . "
+                 ORDER BY COALESCE(p.published_at, p.created_at) DESC, p.id DESC
+                 LIMIT {$limit} OFFSET {$offset}",
+                $params
+            );
+        }
 
         return self::attachCategories($posts);
     }
@@ -54,25 +75,42 @@ class Post extends Model
         }
 
         if (!empty($search)) {
-            $where[] = '(p.title LIKE :q1 OR p.summary LIKE :q2 OR p.content LIKE :q3)';
-            $params['q1'] = "%{$search}%";
-            $params['q2'] = "%{$search}%";
-            $params['q3'] = "%{$search}%";
+            $term = trim(preg_replace('/[+\-<>()~*"@]+/u', ' ', $search) ?? '');
+            if (mb_strlen($term) >= 3) {
+                $where[] = 'MATCH(p.title, p.summary, p.content) AGAINST (:q IN NATURAL LANGUAGE MODE)';
+                $params['q'] = $term;
+            } else {
+                $where[] = '(p.title LIKE :q1 OR p.summary LIKE :q2)';
+                $params['q1'] = '%' . $search . '%';
+                $params['q2'] = '%' . $search . '%';
+            }
         }
 
-        return (int) Database::fetchColumn(
-            'SELECT COUNT(*) FROM posts p WHERE ' . implode(' AND ', $where),
-            $params
-        );
+        try {
+            return (int) Database::fetchColumn(
+                'SELECT COUNT(*) FROM posts p WHERE ' . implode(' AND ', $where),
+                $params
+            );
+        } catch (\Throwable $e) {
+            if (empty($search)) {
+                throw $e;
+            }
+            $where = array_values(array_filter($where, static fn ($part) => !str_contains($part, 'MATCH(')));
+            unset($params['q']);
+            $where[] = '(p.title LIKE :q1 OR p.summary LIKE :q2)';
+            $params['q1'] = '%' . $search . '%';
+            $params['q2'] = '%' . $search . '%';
+            return (int) Database::fetchColumn(
+                'SELECT COUNT(*) FROM posts p WHERE ' . implode(' AND ', $where),
+                $params
+            );
+        }
     }
 
     public static function featuredPosts(int $limit = 3): array
     {
         $posts = Database::fetchAll(
-            "SELECT p.*, c.name AS category_name, c.slug AS category_slug, c.icon AS category_icon, c.color AS category_color, u.name AS author_name
-             FROM posts p
-             LEFT JOIN categories c ON c.id = p.category_id
-             LEFT JOIN users u ON u.id = p.user_id
+            'SELECT ' . self::listColumns() . "
              WHERE p.status = 'published' AND p.is_featured = 1
              ORDER BY COALESCE(p.published_at, p.created_at) DESC
              LIMIT {$limit}"
@@ -359,5 +397,13 @@ class Post extends Model
     public static function countScheduled(): int
     {
         return self::count('status = "scheduled"');
+    }
+
+    private static function listColumns(): string
+    {
+        return 'p.id, p.user_id, p.category_id, p.title, p.slug, p.summary, p.cover_image, p.is_featured, p.status, p.views_count, p.published_at, p.created_at, p.updated_at, p.reading_minutes, c.name AS category_name, c.slug AS category_slug, c.icon AS category_icon, c.color AS category_color, u.name AS author_name
+             FROM posts p
+             LEFT JOIN categories c ON c.id = p.category_id
+             LEFT JOIN users u ON u.id = p.user_id';
     }
 }
