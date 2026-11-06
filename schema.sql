@@ -65,12 +65,14 @@ CREATE TABLE IF NOT EXISTS `posts` (
     `status` ENUM('published', 'draft', 'scheduled') DEFAULT 'published',
     `views_count` INT DEFAULT 0,
     `published_at` DATETIME NULL,
+    `reading_minutes` SMALLINT UNSIGNED NOT NULL DEFAULT 1,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL,
     INDEX `idx_posts_slug` (`slug`),
-    INDEX `idx_posts_status_published` (`status`, `published_at`)
+    INDEX `idx_posts_status_published` (`status`, `published_at`),
+    FULLTEXT KEY `ft_posts_search` (`title`, `summary`, `content`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `tags` (
@@ -240,6 +242,17 @@ CREATE TABLE IF NOT EXISTS `newsletter_campaigns` (
     `last_error` TEXT NULL,
     `sent_at` DATETIME NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `password_resets` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `token_hash` CHAR(64) NOT NULL,
+    `expires_at` DATETIME NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_password_resets_hash` (`token_hash`),
+    KEY `idx_password_resets_user` (`user_id`),
+    CONSTRAINT `fk_password_resets_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

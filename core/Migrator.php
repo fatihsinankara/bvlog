@@ -131,6 +131,39 @@ class Migrator
                 // Sessizce geç
             }
         }
+
+        if (version_compare($fromVersion, '1.3.2', '<')) {
+            try {
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `password_resets` (
+                    `id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `user_id` INT NOT NULL,
+                    `token_hash` CHAR(64) NOT NULL,
+                    `expires_at` DATETIME NOT NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY `uq_password_resets_hash` (`token_hash`),
+                    KEY `idx_password_resets_user` (`user_id`),
+                    CONSTRAINT `fk_password_resets_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            } catch (\Throwable $e) {
+                // Sessizce geç
+            }
+
+            self::addColumnIfNotExists($pdo, 'posts', 'reading_minutes', 'SMALLINT UNSIGNED NOT NULL DEFAULT 1');
+            try {
+                $pdo->exec('UPDATE posts SET reading_minutes = GREATEST(1, CEILING(CHAR_LENGTH(`content`) / 1200))');
+            } catch (\Throwable $e) {
+                // Sessizce geç
+            }
+
+            try {
+                $idx = $pdo->query("SELECT INDEX_NAME FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'posts' AND INDEX_NAME = 'ft_posts_search' LIMIT 1");
+                if ($idx && !$idx->fetch()) {
+                    $pdo->exec('ALTER TABLE posts ADD FULLTEXT INDEX ft_posts_search (title, summary, content)');
+                }
+            } catch (\Throwable $e) {
+                // FULLTEXT desteklenmiyorsa arama LIKE yedeğine düşer
+            }
+        }
     }
 
     public static function addColumnIfNotExists(\PDO $pdo, string $table, string $column, string $definition): void
