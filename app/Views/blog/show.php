@@ -54,7 +54,7 @@ use Core\View;
             <img src="<?= e(url($post['cover_image'])) ?>"
                  alt="<?= e($post['title']) ?>"
                  fetchpriority="high"
-                 width="1080"
+                 <?= \Core\ImageProcessor::sizeAttributes((string) $post['cover_image'], 1080) ?>
                  class="w-full h-auto object-cover">
         </figure>
     <?php endif; ?>

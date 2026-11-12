@@ -157,4 +157,79 @@ class ImageProcessor
             default => $image,
         };
     }
+
+    /**
+     * Yerel yuklenen bir gorselin boyutu ([genislik, yukseklik]). Yalnizca
+     * storage/uploads altindaki dosyalar okunur; dosya yoksa null.
+     */
+    public static function dimensions(string $path): ?array
+    {
+        static $memo = [];
+
+        $path = (string) parse_url($path, PHP_URL_PATH);
+        $base = (string) parse_url(base_url(), PHP_URL_PATH);
+        if ($base !== '' && $base !== '/' && str_starts_with($path, rtrim($base, '/') . '/')) {
+            $path = substr($path, strlen(rtrim($base, '/')));
+        }
+        if (!str_starts_with($path, '/storage/uploads/')) {
+            return null;
+        }
+        if (array_key_exists($path, $memo)) {
+            return $memo[$path];
+        }
+
+        $root = realpath(BVLOG_ROOT . '/storage/uploads');
+        $file = realpath(BVLOG_ROOT . rawurldecode($path));
+        $size = ($root !== false && $file !== false && str_starts_with($file, $root . DIRECTORY_SEPARATOR))
+            ? @getimagesize($file)
+            : false;
+
+        return $memo[$path] = (is_array($size) && $size[0] > 0 && $size[1] > 0)
+            ? [(int) $size[0], (int) $size[1]]
+            : null;
+    }
+
+    /**
+     * Gorsel etiketine yazilacak width/height oznitelikleri. Boyut bilinmiyorsa
+     * $fallbackWidth (varsa) tek basina yazilir.
+     */
+    public static function sizeAttributes(string $path, ?int $fallbackWidth = null): string
+    {
+        $size = self::dimensions($path);
+        if ($size !== null) {
+            return 'width="' . $size[0] . '" height="' . $size[1] . '"';
+        }
+        return $fallbackWidth !== null ? 'width="' . $fallbackWidth . '"' : '';
+    }
+
+    /**
+     * Yazi icerigindeki gorsellere loading="lazy", decoding="async" ve yerel
+     * dosyalar icin width/height ekler. Var olan oznitelikler korunur.
+     * Yerlesim kaymasini (CLS) ve ilk yuklemedeki gereksiz indirmeleri azaltir.
+     */
+    public static function enhanceContentImages(string $html): string
+    {
+        if (stripos($html, '<img') === false) {
+            return $html;
+        }
+
+        return (string) preg_replace_callback('/<img\b([^>]*)>/i', static function (array $m): string {
+            $attrs = $m[1];
+            $add = '';
+            if (!preg_match('/\sloading\s*=/i', $attrs)) {
+                $add .= ' loading="lazy"';
+            }
+            if (!preg_match('/\sdecoding\s*=/i', $attrs)) {
+                $add .= ' decoding="async"';
+            }
+            if (!preg_match('/\s(width|height)\s*=/i', $attrs)
+                && preg_match('/\ssrc\s*=\s*(["\'])(.*?)\1/i', $attrs, $src)) {
+                $size = self::dimensions(html_entity_decode($src[2], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                if ($size !== null) {
+                    $add .= ' width="' . $size[0] . '" height="' . $size[1] . '"';
+                }
+            }
+            return '<img' . $add . $attrs . '>';
+        }, $html);
+    }
 }

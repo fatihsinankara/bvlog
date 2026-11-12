@@ -38,7 +38,7 @@ class NewsletterAdminController extends Controller
 
     private function renderSection(string $section, string $pageTitle): void
     {
-        NewsletterSchema::ensureTables();
+        NewsletterSchema::ensureTables(true);
 
         $statusFilter = (string) Request::get('status', '');
         $search = (string) Request::get('q', '');
