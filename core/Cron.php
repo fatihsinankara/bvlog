@@ -305,10 +305,34 @@ class Cron
             }
         }
 
-        try {
-            self::run(false, null, 'web');
-        } catch (Throwable $e) {
-            // Ziyaretçi isteğini kesintiye uğratma
+        // Gorevler yanit gonderildikten sonra calisir; ziyaretci beklemez.
+        register_shutdown_function(static function (): void {
+            self::finishResponse();
+            try {
+                self::run(false, null, 'web');
+            } catch (Throwable $e) {
+                // Ziyaretçi isteğini kesintiye uğratma
+            }
+        });
+    }
+
+    /**
+     * Yaniti istemciye gonderip baglantiyi kapatir (PHP-FPM, LiteSpeed).
+     * Oturum kilidi de birakilir; aksi halde ayni kullanicinin sonraki istegi
+     * gorevler bitene kadar bekler. Desteklenmeyen SAPI'lerde gorevler eskisi
+     * gibi istegin sonunda calisir.
+     */
+    private static function finishResponse(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+        ignore_user_abort(true);
+
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } elseif (function_exists('litespeed_finish_request')) {
+            litespeed_finish_request();
         }
     }
 
