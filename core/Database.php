@@ -92,6 +92,11 @@ class Database
         return $lastId;
     }
 
+    public static function lastInsertId(): int
+    {
+        return (int) self::getInstance()->lastInsertId();
+    }
+
     public static function update(string $table, array $data, string $where, array $whereParams = []): int
     {
         self::assertIdentifier($table);

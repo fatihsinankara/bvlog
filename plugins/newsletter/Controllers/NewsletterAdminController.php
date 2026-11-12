@@ -75,7 +75,7 @@ class NewsletterAdminController extends Controller
                     'title'        => (string) $r['title'],
                     'category'     => (string) ($r['category_name'] ?? 'Genel'),
                     'excerpt'      => (string) (($r['summary'] ?? '') ?: excerpt((string) $r['content'], 180)),
-                    'url'          => rtrim(base_url(), '/') . post_url($r),
+                    'url'          => post_url($r),
                     'published_ts' => $ts,
                     'date_label'   => format_date($rawDate),
                 ];
@@ -156,7 +156,7 @@ class NewsletterAdminController extends Controller
 
         foreach ($recipients as $sub) {
             $unsubToken = urlencode((string) ($sub['unsubscribe_token'] ?? ''));
-            $unsubFullUrl = rtrim(base_url(), '/') . url('/newsletter/unsubscribe?token=' . $unsubToken);
+            $unsubFullUrl = url('/newsletter/unsubscribe?token=' . $unsubToken);
 
             $wrapped = NewsletterMailer::wrapNewsletterHtml($subject, $contentHtml, $sub);
             $res = NewsletterMailer::sendSingle((string) $sub['email'], $subject, $wrapped, [

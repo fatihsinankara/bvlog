@@ -124,7 +124,7 @@ class NewsletterMailer
             : date('d.m.Y');
 
         $token = urlencode((string) ($subscriber['unsubscribe_token'] ?? ''));
-        $unsubUrl = htmlspecialchars(rtrim(base_url(), '/') . url('/newsletter/unsubscribe?token=' . $token), ENT_QUOTES, 'UTF-8');
+        $unsubUrl = htmlspecialchars(url('/newsletter/unsubscribe?token=' . $token), ENT_QUOTES, 'UTF-8');
 
         $greeting = $subName !== ''
             ? '<p style="margin: 0 0 16px; font-size: 15px; color: #18181b;">Merhaba <strong>' . htmlspecialchars($subName, ENT_QUOTES, 'UTF-8') . '</strong>,</p>'
@@ -182,7 +182,7 @@ HTML;
     {
         $siteTitle = setting('site_title', 'Bvlog');
         $token = urlencode((string) ($subscriber['verify_token'] ?? ''));
-        $verifyUrl = htmlspecialchars(rtrim(base_url(), '/') . url('/newsletter/verify?token=' . $token), ENT_QUOTES, 'UTF-8');
+        $verifyUrl = htmlspecialchars(url('/newsletter/verify?token=' . $token), ENT_QUOTES, 'UTF-8');
 
         $subject = "{$siteTitle} — Bülten Aboneliğinizi Doğrulayın";
         $body = <<<HTML
@@ -201,7 +201,7 @@ HTML;
 HTML;
 
         $unsubToken = urlencode((string) ($subscriber['unsubscribe_token'] ?? ''));
-        $unsubFullUrl = rtrim(base_url(), '/') . url('/newsletter/unsubscribe?token=' . $unsubToken);
+        $unsubFullUrl = url('/newsletter/unsubscribe?token=' . $unsubToken);
 
         return self::sendSingle(
             (string) $subscriber['email'],
@@ -233,7 +233,7 @@ HTML;
 HTML;
 
         $unsubToken = urlencode((string) ($subscriber['unsubscribe_token'] ?? ''));
-        $unsubFullUrl = rtrim(base_url(), '/') . url('/newsletter/unsubscribe?token=' . $unsubToken);
+        $unsubFullUrl = url('/newsletter/unsubscribe?token=' . $unsubToken);
 
         return self::sendSingle(
             (string) $subscriber['email'],

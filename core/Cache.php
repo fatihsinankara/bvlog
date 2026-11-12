@@ -473,10 +473,8 @@ class Cache
 
         // 4. Blog İlk Sayfa Listesi
         $totalPublished = Post::countPublished(null, '');
-        self::putRaw('blog', "blog:list:page_1_per_{$limit}", [
-            'posts' => $latestPosts,
-            'total' => $totalPublished,
-        ], self::defaultTtl(), 'Blog Yazı Listesi (Sayfa 1)');
+        self::putRaw('blog', 'blog:list:total', $totalPublished, self::defaultTtl(), 'Blog Yazı Sayısı');
+        self::putRaw('blog', "blog:list:posts:page_1_per_{$limit}", $latestPosts, self::defaultTtl(), 'Blog Yazı Listesi (Sayfa 1)');
         $warmed++;
 
         // 5. Portfolyo Vitrini

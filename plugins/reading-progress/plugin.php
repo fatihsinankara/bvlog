@@ -1,11 +1,17 @@
 <?php
 
 use Core\Hook;
-use Core\Request;
 
-Hook::addAction('footer_scripts', function () {
-    $path = Request::path();
-    if (!str_starts_with($path, '/blog/') || $path === '/blog') {
+// Yazi adresi kalici baglanti yapisina gore /blog/ ile baslamayabilir;
+// bu yuzden yol yerine yazi sayfasinin calistirdigi kancaya bakilir.
+$bvlogReadingProgressOnPost = false;
+
+Hook::addAction('post_before_content', function () use (&$bvlogReadingProgressOnPost) {
+    $bvlogReadingProgressOnPost = true;
+});
+
+Hook::addAction('footer_scripts', function () use (&$bvlogReadingProgressOnPost) {
+    if (!$bvlogReadingProgressOnPost) {
         return;
     }
 

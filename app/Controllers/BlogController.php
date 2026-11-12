@@ -29,26 +29,34 @@ class BlogController extends Controller
         $offset = ($page - 1) * $perPage;
 
         if ($search === '') {
-            $listData = Cache::remember(
-                "blog:list:page_{$page}_per_{$perPage}",
-                function () use ($perPage, $offset): array {
-                    return [
-                        'posts' => Post::publishedList($perPage, $offset, null, ''),
-                        'total' => Post::countPublished(null, ''),
-                    ];
-                },
+            $total = (int) Cache::remember(
+                'blog:list:total',
+                static fn (): int => Post::countPublished(null, ''),
                 null,
                 'blog',
-                "Blog Yazı Listesi (Sayfa {$page})"
+                'Blog Yazı Sayısı'
             );
-            $posts = $listData['posts'];
-            $total = (int) $listData['total'];
         } else {
-            $posts = Post::publishedList($perPage, $offset, null, $search);
             $total = Post::countPublished(null, $search);
         }
 
         $totalPages = (int) ceil($total / $perPage);
+        if ($page > max(1, $totalPages)) {
+            Router::abort(404, 'Bu sayfada gösterilecek yazı yok.');
+        }
+
+        if ($search === '') {
+            $posts = Cache::remember(
+                "blog:list:posts:page_{$page}_per_{$perPage}",
+                static fn (): array => Post::publishedList($perPage, $offset, null, ''),
+                null,
+                'blog',
+                "Blog Yazı Listesi (Sayfa {$page})"
+            );
+        } else {
+            $posts = Post::publishedList($perPage, $offset, null, $search);
+        }
+
         $categories = Cache::remember(
             'blog:category_counts',
             static fn (): array => Category::allWithCounts(),
@@ -80,21 +88,20 @@ class BlogController extends Controller
         $offset = ($page - 1) * $perPage;
 
         $catData = Cache::remember(
-            "blog:category:{$slug}:page_{$page}_per_{$perPage}",
-            function () use ($slug, $perPage, $offset): ?array {
+            "blog:category:{$slug}:info",
+            static function () use ($slug): ?array {
                 $category = Category::findBySlug($slug);
                 if (!$category) {
                     return null;
                 }
                 return [
                     'category' => $category,
-                    'posts'    => Post::publishedList($perPage, $offset, (int) $category['id']),
                     'total'    => Post::countPublished((int) $category['id']),
                 ];
             },
             null,
             'blog',
-            "Kategori Arşivi: {$slug} (Sayfa {$page})"
+            "Kategori Bilgisi: {$slug}"
         );
 
         if (!$catData || empty($catData['category'])) {
@@ -102,9 +109,20 @@ class BlogController extends Controller
         }
 
         $category = $catData['category'];
-        $posts = $catData['posts'];
         $total = (int) $catData['total'];
         $totalPages = (int) ceil($total / $perPage);
+        if ($page > max(1, $totalPages)) {
+            Router::abort(404, 'Bu sayfada gösterilecek yazı yok.');
+        }
+
+        $categoryId = (int) $category['id'];
+        $posts = Cache::remember(
+            "blog:category:{$slug}:posts:page_{$page}_per_{$perPage}",
+            static fn (): array => Post::publishedList($perPage, $offset, $categoryId),
+            null,
+            'blog',
+            "Kategori Arşivi: {$slug} (Sayfa {$page})"
+        );
         $categories = Cache::remember(
             'blog:category_counts',
             static fn (): array => Category::allWithCounts(),

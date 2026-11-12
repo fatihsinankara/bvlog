@@ -6,6 +6,9 @@ class Router
 {
     private static array $routes = [];
 
+    /** @var array<string, true> CSRF kontrolunden muaf POST yollari. */
+    private static array $csrfExempt = [];
+
     public static function get(string $pattern, array|callable $handler, array $middlewares = []): void
     {
         self::add('GET', $pattern, $handler, $middlewares);
@@ -14,6 +17,20 @@ class Router
     public static function post(string $pattern, array|callable $handler, array $middlewares = []): void
     {
         self::add('POST', $pattern, $handler, $middlewares);
+    }
+
+    /**
+     * Dis istemcilerin oturumsuz POST attigi ve kendi gizli jetonuyla korunan
+     * yollar icin (or. RFC 8058 tek tikla abonelikten cikma).
+     */
+    public static function csrfExempt(string $pattern): void
+    {
+        self::$csrfExempt['/' . trim($pattern, '/')] = true;
+    }
+
+    public static function isCsrfExempt(string $path): bool
+    {
+        return isset(self::$csrfExempt[$path]);
     }
 
     public static function add(string $method, string $pattern, array|callable $handler, array $middlewares = []): void
@@ -41,7 +58,7 @@ class Router
         $path = Request::path();
 
         // POST isteklerinde global CSRF kontrolü
-        if ($method === 'POST') {
+        if ($method === 'POST' && !self::isCsrfExempt($path)) {
             if (!Csrf::verify()) {
                 if (Request::isAjax()) {
                     Response::json(['success' => false, 'message' => 'Güvenlik doğrulaması (CSRF) başarısız oldu. Sayfayı yenileyin.'], 403);

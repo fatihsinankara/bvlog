@@ -182,6 +182,23 @@ if (!function_exists('reading_time')) {
     }
 }
 
+if (!function_exists('excerpt')) {
+    function excerpt(string $content, int $limit = 160): string
+    {
+        $text = html_entity_decode(strip_tags($content), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = trim(preg_replace('/\s+/u', ' ', $text) ?? '');
+        if ($limit <= 0 || mb_strlen($text, 'UTF-8') <= $limit) {
+            return $text;
+        }
+        $cut = mb_substr($text, 0, $limit, 'UTF-8');
+        $space = mb_strrpos($cut, ' ', 0, 'UTF-8');
+        if ($space !== false && $space > (int) ($limit * 0.6)) {
+            $cut = mb_substr($cut, 0, $space, 'UTF-8');
+        }
+        return rtrim($cut, " \t\n\r\0\x0B.,;:-") . '…';
+    }
+}
+
 if (!function_exists('post_reading_minutes')) {
     function post_reading_minutes(array $post): int
     {
