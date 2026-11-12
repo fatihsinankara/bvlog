@@ -52,6 +52,9 @@ $excludedRootItems = [
     'tailwind.config.js',
     'postcss.config.js',
     'build-release.php',
+    'tests',
+    'phpstan.neon.dist',
+    'phpstan-baseline.neon',
 ];
 
 // Son kullanıcı paketine DAHİL EDİLMEYECEK göreli yollar (yerel kurulum verileri)

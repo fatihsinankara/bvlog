@@ -6,8 +6,8 @@
     RewriteRule ^\.(?!well-known) - [F,L]
 
     # Hassas sistem dizinlerine doğrudan erişimi engelle
-    RewriteRule ^(app|core|config|resources|node_modules|dist|storage/logs|storage/cache)(/.*)?$ - [F,L]
-    RewriteRule ^(schema\.sql|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|build-release\.php|\.env|storage/installed\.lock|storage/safe_mode\.flag)$ - [F,L]
+    RewriteRule ^(app|core|config|resources|node_modules|dist|tests|storage/logs|storage/cache)(/.*)?$ - [F,L]
+    RewriteRule ^(schema\.sql|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|build-release\.php|phpstan\.neon\.dist|phpstan-baseline\.neon|\.env|storage/installed\.lock|storage/safe_mode\.flag)$ - [F,L]
 
     # themes, plugins ve storage altındaki hiçbir .php dosyasına doğrudan URL ile erişilemez
     RewriteRule ^(themes|plugins|storage)/.*\.php$ - [F,L]

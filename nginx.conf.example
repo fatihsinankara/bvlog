@@ -14,11 +14,11 @@ server {
         deny all;
     }
 
-    location ~ ^/(app|core|config|resources|node_modules|dist|storage/logs|storage/cache)(/|$) {
+    location ~ ^/(app|core|config|resources|node_modules|dist|tests|storage/logs|storage/cache)(/|$) {
         deny all;
     }
 
-    location ~ ^/(schema\.sql|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|build-release\.php|cron\.php)$ {
+    location ~ ^/(schema\.sql|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|build-release\.php|phpstan\.neon\.dist|phpstan-baseline\.neon|cron\.php)$ {
         deny all;
     }
 
