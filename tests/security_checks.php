@@ -76,5 +76,91 @@ RateLimiter::setBaseDir($blocker);
 check(RateLimiter::tooManyAttempts('x', 5, 60) === true, 'unwritable limiter fails closed');
 RateLimiter::setBaseDir(null);
 
+// TLS: sertifika hatasinda dogrulamasiz tekrar deneme olmamali.
+$tlsOff = 0;
+foreach (['core/Updater.php', 'plugins/captcha/CaptchaService.php', 'plugins/smtp/SmtpClient.php'] as $file) {
+    $tlsOff += preg_match_all(
+        '/VERIFYPEER\s*,\s*false|VERIFYHOST\s*,\s*0|verify_peer\'?\s*=>\s*false/i',
+        (string) file_get_contents(BVLOG_ROOT . '/' . $file)
+    );
+}
+check($tlsOff === 0, 'no code path disables TLS verification');
+
+// Guncelleme paketi yalnizca GitHub'dan ve HTTPS ile.
+check(Core\Updater::isAllowedDownloadUrl('https://github.com/o/r/releases/download/v1/bvlog.zip'), 'github release url allowed');
+check(Core\Updater::isAllowedDownloadUrl('https://api.github.com/repos/o/r/zipball/v1'), 'github zipball url allowed');
+check(!Core\Updater::isAllowedDownloadUrl('http://github.com/o/r/a.zip'), 'plain http download rejected');
+check(!Core\Updater::isAllowedDownloadUrl('https://evil.example/a.zip'), 'foreign host download rejected');
+check(!Core\Updater::isAllowedDownloadUrl('https://github.com.evil.example/a.zip'), 'lookalike host rejected');
+check(!Core\Updater::isAllowedDownloadUrl('https://user@github.com/a.zip'), 'credentials in download url rejected');
+check(!Core\Updater::isAllowedDownloadUrl('file:///etc/passwd'), 'file scheme rejected');
+
+// Gizli veriler disk onbellegine ve public view verisine gitmemeli.
+if (extension_loaded('pdo_sqlite')) {
+    $pdo = new PDO('sqlite::memory:', null, null, [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+    $pdo->exec('CREATE TABLE settings (key_name TEXT PRIMARY KEY, value TEXT)');
+    $pdo->exec("INSERT INTO settings VALUES ('site_title', 'Test'), ('cache_enabled', '1'),
+        ('smtp_password', 'smtp-secret-1'), ('cron_token', 'cron-secret-2'),
+        ('captcha_cf_secret_key', 'cf-secret-3'), ('captcha_rc_secret_key', 'rc-secret-4')");
+    $pdo->exec('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, username TEXT, email TEXT, password_hash TEXT,
+        role_title TEXT, bio TEXT, long_bio TEXT, avatar TEXT, cv_pdf TEXT, created_at TEXT, updated_at TEXT)');
+    $pdo->exec("INSERT INTO users VALUES (1, 'Yazar', 'admin', 'admin@example.com', '\$2y\$hash', 'Dev', 'Bio', '', '', '', '', '')");
+    $pdo->exec('CREATE TABLE comments (id INTEGER PRIMARY KEY, post_id INT, author_name TEXT, author_email TEXT,
+        content TEXT, status TEXT, ip_address TEXT, created_at TEXT)');
+    $pdo->exec("INSERT INTO comments VALUES (1, 7, 'Okur', 'okur@example.com', 'Selam', 'approved', '203.0.113.5', '')");
+    (new ReflectionProperty(Core\Database::class, 'instance'))->setValue(null, $pdo);
+
+    App\Models\Setting::clearCache();
+    $all = App\Models\Setting::loadAll();
+    $onDisk = json_encode(Core\Cache::getRaw('settings', 'settings:all'));
+    check(!str_contains((string) $onDisk, 'secret') && !isset($all['smtp_password']), 'secret settings kept out of settings cache');
+    check(App\Models\Setting::get('smtp_password') === 'smtp-secret-1', 'secret setting still readable');
+    check(App\Models\Setting::get('cron_token') === 'cron-secret-2', 'cron token still readable');
+    App\Models\Setting::clearCache();
+    check(App\Models\Setting::get('captcha_cf_secret_key') === 'cf-secret-3', 'secret readable when settings come from disk cache');
+
+    App\Models\User::clearAuthorCache();
+    $author = App\Models\User::firstAuthor() ?? [];
+    check(($author['name'] ?? '') === 'Yazar', 'author profile loaded');
+    check(!array_key_exists('password_hash', $author) && !array_key_exists('email', $author) && !array_key_exists('username', $author), 'author row has no credentials');
+
+    $comments = App\Models\Comment::approvedForPost(7);
+    check(($comments[0]['author_name'] ?? '') === 'Okur', 'approved comments loaded');
+    check(!array_key_exists('author_email', $comments[0]) && !array_key_exists('ip_address', $comments[0]), 'public comments omit email and ip');
+
+    App\Models\Setting::clearCache();
+    App\Models\User::clearAuthorCache();
+    Core\Cache::forgetRaw('settings', 'settings:all');
+    Core\Cache::forgetRaw('settings', 'settings:first_author_public');
+    (new ReflectionProperty(Core\Database::class, 'instance'))->setValue(null, null);
+} else {
+    echo "skip cache secret checks (pdo_sqlite yok)\n";
+}
+
+// Eklenti hatalari: uyari karantinaya yol acmamali; captcha filtresi hata verirse public form reddedilmeli.
+$rlDir = sys_get_temp_dir() . '/bvlog-rl-' . bin2hex(random_bytes(4));
+mkdir($rlDir);
+RateLimiter::setBaseDir($rlDir);
+Core\PluginManager::handleRuntimeError('ornek', new ErrorException('uyari', 0, E_WARNING, __FILE__, __LINE__));
+check(RateLimiter::tooManyAttempts('plugin_runtime_error:ornek', 1, 600) === false, 'plugin warning is logged, not counted');
+Core\PluginManager::handleRuntimeError('ornek', new RuntimeException('hata'));
+check(RateLimiter::tooManyAttempts('plugin_runtime_error:ornek', 1, 600) === true, 'plugin error is counted toward quarantine');
+check(RateLimiter::tooManyAttempts('plugin_runtime_error:ornek', 3, 600) === false, 'single plugin error does not reach quarantine limit');
+
+Core\Hook::addFilter('verify_captcha', function (): bool {
+    throw new RuntimeException('captcha servisi coktu');
+});
+check(captcha_verify('contact') === false, 'failing captcha filter rejects public form');
+check(captcha_verify('comment') === false, 'failing captcha filter rejects comment form');
+check(captcha_verify('login') === true, 'login stays reachable when captcha filter fails');
+RateLimiter::setBaseDir(null);
+
+// TOC: baslik metni HTML olarak eklenmemeli.
+$toc = (string) file_get_contents(BVLOG_ROOT . '/plugins/table-of-contents/plugin.php');
+check(!preg_match('/\+\s*heading\.textContent/', $toc) && str_contains($toc, 'label.textContent'), 'toc builds links with textContent');
+
 echo $failed === 0 ? "ALL PASSED\n" : "{$failed} FAILED\n";
 exit($failed === 0 ? 0 : 1);

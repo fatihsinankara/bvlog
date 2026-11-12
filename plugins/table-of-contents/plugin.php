@@ -37,7 +37,8 @@ Hook::addAction('footer_scripts', function () {
             .replace(/\s+/g, '-');
     }
 
-    var listHtml = '';
+    // Baglantilar DOM ile kurulur; baslik metni ve kimligi HTML olarak yorumlanmaz.
+    var links = [];
     headings.forEach(function (heading, index) {
         if (!heading.id) {
             var slug = slugify(heading.textContent);
@@ -45,18 +46,25 @@ Hook::addAction('footer_scripts', function () {
         }
 
         var isH3 = heading.tagName.toLowerCase() === 'h3';
-        var linkClasses = isH3
+        var link = document.createElement('a');
+        link.href = '#' + encodeURIComponent(heading.id);
+        link.setAttribute('data-target', heading.id);
+        link.className = isH3
             ? 'bvlog-toc-link flex items-center gap-1.5 ml-4 pl-2.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 rounded border-l border-zinc-200 dark:border-zinc-800 transition-colors'
             : 'bvlog-toc-link flex items-center gap-2 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-zinc-100 font-medium py-1 px-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors';
 
-        var prefixIcon = isH3
-            ? '<i class="fa-solid fa-angle-right text-[9px] text-zinc-400 shrink-0"></i>'
-            : '<span class="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shrink-0"></span>';
+        var prefix = document.createElement(isH3 ? 'i' : 'span');
+        prefix.className = isH3
+            ? 'fa-solid fa-angle-right text-[9px] text-zinc-400 shrink-0'
+            : 'w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shrink-0';
 
-        listHtml += '<a href="#' + heading.id + '" data-target="' + heading.id + '" class="' + linkClasses + '">'
-            + prefixIcon
-            + '<span class="truncate">' + heading.textContent.trim() + '</span>'
-            + '</a>';
+        var label = document.createElement('span');
+        label.className = 'truncate';
+        label.textContent = heading.textContent.trim();
+
+        link.appendChild(prefix);
+        link.appendChild(label);
+        links.push(link);
     });
 
     var isCollapsed = localStorage.getItem('bvlog_toc_collapsed') === '1';
@@ -74,14 +82,15 @@ Hook::addAction('footer_scripts', function () {
         + '      <i id="bvlog-toc-toggle-icon" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" style="' + (isCollapsed ? 'transform: rotate(-90deg);' : '') + '"></i>'
         + '    </button>'
         + '  </div>'
-        + '  <nav id="bvlog-toc-list" class="mt-3.5 pt-3 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-0.5" style="' + (isCollapsed ? 'display: none;' : '') + '">'
-        +      listHtml
-        + '  </nav>'
+        + '  <nav id="bvlog-toc-list" class="mt-3.5 pt-3 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-0.5" style="' + (isCollapsed ? 'display: none;' : '') + '"></nav>'
         + '</div>';
 
     // Daraltma / Genişletme Tetikleyicisi
     var toggleBtn = document.getElementById('bvlog-toc-toggle');
     var navList = document.getElementById('bvlog-toc-list');
+    links.forEach(function (link) {
+        navList.appendChild(link);
+    });
     var toggleText = document.getElementById('bvlog-toc-toggle-text');
     var toggleIcon = document.getElementById('bvlog-toc-toggle-icon');
 

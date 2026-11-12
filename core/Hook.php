@@ -7,6 +7,17 @@ class Hook
     private static array $actions = [];
     private static array $filters = [];
     private static ?string $currentLoadingPlugin = null;
+    /** @var array<string, true> Son calistirmada geri cagrisi hata veren filtreler. */
+    private static array $failedFilters = [];
+
+    /**
+     * applyFilters() cagrisinda bu etiketin bir geri cagrisi hata verdiyse true.
+     * Guvenlik filtreleri (or. captcha) hata durumunda kapali tarafa dusmek icin kullanir.
+     */
+    public static function filterFailed(string $tag): bool
+    {
+        return isset(self::$failedFilters[$tag]);
+    }
 
     public static function setCurrentPlugin(?string $pluginId): void
     {
@@ -34,7 +45,7 @@ class Hook
                     call_user_func_array($item['callback'], $args);
                 } catch (\Throwable $e) {
                     if (!empty($item['plugin'])) {
-                        PluginManager::quarantine($item['plugin'], $e->getMessage(), $e->getTraceAsString());
+                        PluginManager::handleRuntimeError($item['plugin'], $e);
                     } else {
                         self::logError("Action [{$tag}] error: " . $e->getMessage());
                     }
@@ -57,14 +68,16 @@ class Hook
             return $value;
         }
 
+        unset(self::$failedFilters[$tag]);
         ksort(self::$filters[$tag]);
         foreach (self::$filters[$tag] as $items) {
             foreach ($items as $item) {
                 try {
                     $value = call_user_func_array($item['callback'], array_merge([$value], $args));
                 } catch (\Throwable $e) {
+                    self::$failedFilters[$tag] = true;
                     if (!empty($item['plugin'])) {
-                        PluginManager::quarantine($item['plugin'], $e->getMessage(), $e->getTraceAsString());
+                        PluginManager::handleRuntimeError($item['plugin'], $e);
                     } else {
                         self::logError("Filter [{$tag}] error: " . $e->getMessage());
                     }

@@ -267,6 +267,44 @@ if (!function_exists('format_bytes')) {
 if (!function_exists('captcha_verify')) {
     function captcha_verify(string $form): bool
     {
-        return (bool) \Core\Hook::applyFilters('verify_captcha', true, $form);
+        $result = \Core\Hook::applyFilters('verify_captcha', true, $form);
+
+        // Giris formu acik kalir; aksi halde yonetici paneline girip sorunu
+        // duzeltmek imkansizlasir. Giris zaten IP basina hiz sinirina tabi.
+        $failClosed = $form !== 'login';
+
+        // Dogrulama filtresi hata verdiyse form gecirilmez.
+        if ($failClosed && \Core\Hook::filterFailed('verify_captcha')) {
+            return false;
+        }
+
+        // Captcha yapilandirilmis ama eklenti karantinaya alinmissa
+        // public formlar sessizce korumasiz kalmaz.
+        if ($failClosed && captcha_required_but_unavailable($form)) {
+            return false;
+        }
+
+        return (bool) $result;
+    }
+}
+
+if (!function_exists('captcha_required_but_unavailable')) {
+    function captcha_required_but_unavailable(string $form): bool
+    {
+        if (!is_installed() || \Core\PluginManager::isActive('captcha')) {
+            return false;
+        }
+        if (!\Core\PluginManager::isQuarantined('captcha')) {
+            return false;
+        }
+        $provider = (string) setting('captcha_provider', 'off');
+        if ($provider !== 'cloudflare' && $provider !== 'recaptcha') {
+            return false;
+        }
+        $forms = json_decode((string) setting('captcha_forms', ''), true);
+        if (!is_array($forms)) {
+            $forms = ['login', 'contact', 'comment', 'forgot_password'];
+        }
+        return in_array($form, $forms, true);
     }
 }

@@ -12,6 +12,19 @@ class Setting extends Model
     private static ?array $cache = null;
 
     /**
+     * Gizli ayarlar disk onbellegine yazilmaz; ihtiyac oldugunda
+     * veritabanindan okunur ve yalnizca istek boyunca bellekte tutulur.
+     */
+    public const SECRET_KEYS = [
+        'cron_token',
+        'smtp_password',
+        'captcha_cf_secret_key',
+        'captcha_rc_secret_key',
+    ];
+
+    private static ?array $secrets = null;
+
+    /**
      * Arka plan görevlerinde güncellendiğinde ön yüz sayfa önbelleklerini
      * sıfırlamaması gereken dahili durum anahtarları.
      */
@@ -32,28 +45,68 @@ class Setting extends Model
 
         $cachedOnDisk = Cache::getRaw('settings', 'settings:all');
         if (is_array($cachedOnDisk) && ($cachedOnDisk['cache_enabled'] ?? '1') === '1') {
-            self::$cache = $cachedOnDisk;
-            return self::$cache;
+            if (array_intersect_key($cachedOnDisk, array_flip(self::SECRET_KEYS)) === []) {
+                self::$cache = $cachedOnDisk;
+                return self::$cache;
+            }
+            // Eski surumun yazdigi onbellek gizli ayarlari ve tam yazar satirini
+            // iceriyor; bir kez tamamen temizlenip yeniden kurulur.
+            Cache::flushAll();
         }
 
         self::$cache = [];
+        self::$secrets = [];
         $rows = Database::fetchAll('SELECT key_name, value FROM settings');
         foreach ($rows as $row) {
+            if (in_array($row['key_name'], self::SECRET_KEYS, true)) {
+                self::$secrets[$row['key_name']] = $row['value'];
+                continue;
+            }
             self::$cache[$row['key_name']] = $row['value'];
         }
 
-        if ((self::$cache['cache_enabled'] ?? '1') === '1') {
-            $ttl = max(60, (int) (self::$cache['cache_ttl'] ?? 3600));
-            Cache::putRaw('settings', 'settings:all', self::$cache, $ttl, 'Tüm Site ve Modül Ayarları');
-        }
+        self::writeDiskCache();
 
         return self::$cache;
     }
 
     public static function get(string $key, mixed $default = null): mixed
     {
+        if (in_array($key, self::SECRET_KEYS, true)) {
+            $secrets = self::loadSecrets();
+            return array_key_exists($key, $secrets) ? $secrets[$key] : $default;
+        }
         $all = self::loadAll();
         return array_key_exists($key, $all) ? $all[$key] : $default;
+    }
+
+    private static function loadSecrets(): array
+    {
+        if (self::$secrets !== null) {
+            return self::$secrets;
+        }
+
+        self::$secrets = [];
+        $placeholders = implode(', ', array_fill(0, count(self::SECRET_KEYS), '?'));
+        $rows = Database::fetchAll(
+            "SELECT key_name, value FROM settings WHERE key_name IN ({$placeholders})",
+            self::SECRET_KEYS
+        );
+        foreach ($rows as $row) {
+            self::$secrets[$row['key_name']] = $row['value'];
+        }
+
+        return self::$secrets;
+    }
+
+    private static function writeDiskCache(): void
+    {
+        if (self::$cache !== null && (self::$cache['cache_enabled'] ?? '1') === '1') {
+            $ttl = max(60, (int) (self::$cache['cache_ttl'] ?? 3600));
+            Cache::putRaw('settings', 'settings:all', self::$cache, $ttl, 'Tüm Site ve Modül Ayarları');
+        } else {
+            Cache::forgetRaw('settings', 'settings:all');
+        }
     }
 
     public static function set(string $key, mixed $value): void
@@ -67,16 +120,16 @@ class Setting extends Model
             ['k' => $key, 'v' => $strVal, 'v2' => $strVal]
         );
 
-        if (self::$cache !== null) {
-            self::$cache[$key] = $strVal;
-        }
-
-        // Ayar dosya önbelleğini güncelle veya temizle
-        if (self::$cache !== null && (self::$cache['cache_enabled'] ?? '1') === '1') {
-            $ttl = max(60, (int) (self::$cache['cache_ttl'] ?? 3600));
-            Cache::putRaw('settings', 'settings:all', self::$cache, $ttl, 'Tüm Site ve Modül Ayarları');
+        if (in_array($key, self::SECRET_KEYS, true)) {
+            if (self::$secrets !== null) {
+                self::$secrets[$key] = $strVal;
+            }
         } else {
-            Cache::forgetRaw('settings', 'settings:all');
+            if (self::$cache !== null) {
+                self::$cache[$key] = $strVal;
+            }
+            // Ayar dosya önbelleğini güncelle veya temizle
+            self::writeDiskCache();
         }
 
         // İçerik/görünüm ayarları değiştiyse ön yüz önbellek gruplarını otomatik tazele
@@ -105,6 +158,7 @@ class Setting extends Model
     public static function clearCache(): void
     {
         self::$cache = null;
+        self::$secrets = null;
         Cache::forgetRaw('settings', 'settings:all');
     }
 }

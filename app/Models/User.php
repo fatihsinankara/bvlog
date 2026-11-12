@@ -11,6 +11,8 @@ class User extends Model
     protected static string $table = 'users';
     private static ?array $authorCache = null;
 
+    public const PUBLIC_COLUMNS = ['id', 'name', 'role_title', 'bio', 'long_bio', 'avatar', 'cv_pdf', 'created_at', 'updated_at'];
+
     public static function findByEmailOrUsername(string $identity): ?array
     {
         return Database::fetchOne(
@@ -25,8 +27,13 @@ class User extends Model
             return self::$authorCache;
         }
 
-        $author = Cache::remember('settings:first_author', function () {
-            return Database::fetchOne('SELECT * FROM users ORDER BY id ASC LIMIT 1');
+        // Sonuc diske onbelleklenir ve tum public view'lara gecer; bu yuzden
+        // parola ozeti, e-posta ve kullanici adi secilmez.
+        $author = Cache::remember('settings:first_author_public', function () {
+            Cache::forgetRaw('settings', 'settings:first_author');
+            return Database::fetchOne(
+                'SELECT ' . implode(', ', self::PUBLIC_COLUMNS) . ' FROM users ORDER BY id ASC LIMIT 1'
+            );
         }, null, 'settings', 'Yazar Profil Bilgileri');
 
         if (is_array($author)) {

@@ -116,7 +116,7 @@ HTML;
 
         if ($provider === self::PROVIDER_CLOUDFLARE) {
             $secret = $overrideSecret ?: $config['cf_secret_key'];
-            $token = $token ?: (Request::post('cf-turnstile-response') ?? '');
+            $token = $token ?: self::postedToken('cf-turnstile-response');
 
             if ($token === '') {
                 return [
@@ -171,7 +171,7 @@ HTML;
 
         if ($provider === self::PROVIDER_RECAPTCHA) {
             $secret = $overrideSecret ?: $config['rc_secret_key'];
-            $token = $token ?: (Request::post('g-recaptcha-response') ?? '');
+            $token = $token ?: self::postedToken('g-recaptcha-response');
 
             if ($token === '') {
                 return [
@@ -230,6 +230,12 @@ HTML;
         ];
     }
 
+    private static function postedToken(string $field): string
+    {
+        $value = Request::post($field, '');
+        return is_string($value) ? $value : '';
+    }
+
     private static function sendPostRequest(string $url, array $params): ?array
     {
         $postFields = http_build_query($params);
@@ -246,15 +252,8 @@ HTML;
                 CURLOPT_SSL_VERIFYHOST => 2,
             ]);
 
+            // Sertifika hatasinda dogrulamasiz tekrar denenmez.
             $body = curl_exec($ch);
-            $errno = curl_errno($ch);
-
-            // SSL sertifika sorunu durumunda güvenli yedek deneme
-            if (($errno === 60 || $errno === 77) && !$body) {
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                $body = curl_exec($ch);
-            }
 
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
