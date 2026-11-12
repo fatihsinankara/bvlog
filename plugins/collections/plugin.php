@@ -2,6 +2,7 @@
 
 use Core\Hook;
 use Core\Request;
+use Core\Response;
 use Core\Router;
 use Core\View;
 use Plugins\Collections\Controllers\CollectionAdminController;
@@ -32,8 +33,33 @@ Router::post('/admin/collections/{id}/delete', [CollectionAdminController::class
 // 3. Rotalar — Ön Yüz (Public)
 Router::get('/collections', [CollectionPublicController::class, 'index']);
 Router::get('/collections/{slug}', [CollectionPublicController::class, 'show']);
-Router::get('/koleksiyonlar', [CollectionPublicController::class, 'index']);
-Router::get('/koleksiyonlar/{slug}', [CollectionPublicController::class, 'show']);
+// Eski Turkce adres ayni icerigi ikinci kez yayimlamasin diye kalici yonlendirilir.
+Router::get('/koleksiyonlar', static fn () => Response::redirect('/collections', 301));
+Router::get('/koleksiyonlar/{slug}', static fn (string $slug) => Response::redirect('/collections/' . rawurlencode($slug), 301));
+
+// Site haritasina koleksiyon adresleri
+Hook::addFilter('sitemap_urls', static function (array $urls): array {
+    try {
+        $entries = Collection::sitemapEntries();
+    } catch (\Throwable $e) {
+        return $urls;
+    }
+    if ($entries === []) {
+        return $urls;
+    }
+
+    $latest = null;
+    foreach ($entries as $entry) {
+        $modified = $entry['last_modified'] ?? null;
+        if (is_string($modified) && ($latest === null || strtotime($modified) > strtotime($latest))) {
+            $latest = $modified;
+        }
+        $urls[] = ['loc' => url('/collections/' . $entry['slug']), 'lastmod' => $modified];
+    }
+    $urls[] = ['loc' => url('/collections'), 'lastmod' => $latest];
+
+    return $urls;
+});
 
 // 4. Kanca: Admin Yan Menüsüne "Koleksiyonlar" Linki Ekleme
 Hook::addAction('admin_sidebar_menu', function () {
