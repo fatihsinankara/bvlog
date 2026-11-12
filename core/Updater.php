@@ -120,14 +120,9 @@ class Updater
                     'Accept: application/vnd.github.v3+json',
                 ],
             ]);
+            // Sertifika dogrulanamazsa (CA paketi eksik ya da gecersiz sertifika)
+            // dogrulamasiz tekrar denenmez; istek basarisiz sayilir.
             $body = curl_exec($ch);
-            $errno = curl_errno($ch);
-            // Sunucuda SSL CA sertifika paketi eksikse (CURLE_SSL_CACERT 60 / CURLE_SSL_CACERT_BADFILE 77) geri çekilme
-            if ($errno === 60 || $errno === 77) {
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                $body = curl_exec($ch);
-            }
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
@@ -247,6 +242,12 @@ class Updater
             return [
                 'success' => false,
                 'error'   => 'GitHub sürümüne ait indirilebilir ZIP paketi bulunamadı.',
+            ];
+        }
+        if (!self::isAllowedDownloadUrl($downloadUrl)) {
+            return [
+                'success' => false,
+                'error'   => 'Güncelleme paketi adresi GitHub dışında bir kaynağı gösteriyor; indirme durduruldu.',
             ];
         }
 
@@ -434,8 +435,34 @@ class Updater
         ];
     }
 
+    /**
+     * Guncelleme paketi yalnizca GitHub uzerinden ve HTTPS ile indirilir.
+     * GitHub, surum varliklarini bu alan adlarina yonlendirir.
+     */
+    public static function isAllowedDownloadUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+        if (!is_array($parts) || strtolower($parts['scheme'] ?? '') !== 'https') {
+            return false;
+        }
+        if (isset($parts['user']) || isset($parts['pass']) || isset($parts['port'])) {
+            return false;
+        }
+        $host = strtolower($parts['host'] ?? '');
+        return in_array($host, [
+            'github.com',
+            'api.github.com',
+            'codeload.github.com',
+            'objects.githubusercontent.com',
+            'release-assets.githubusercontent.com',
+        ], true);
+    }
+
     private static function downloadPackage(string $url, string $destPath): bool
     {
+        if (!self::isAllowedDownloadUrl($url)) {
+            return false;
+        }
         $userAgent = 'Bvlog-CMS/' . (setting('db_version', '1.0.0')) . ' (PHP ' . PHP_VERSION . ')';
 
         // 1. Önce cURL ile akış (streaming) indirme dene
@@ -451,19 +478,12 @@ class Updater
                     CURLOPT_USERAGENT      => $userAgent,
                     CURLOPT_SSL_VERIFYPEER => true,
                     CURLOPT_SSL_VERIFYHOST => 2,
+                    CURLOPT_PROTOCOLS      => CURLPROTO_HTTPS,
+                    CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
                 ]);
 
+                // Sertifika hatasinda dogrulamasiz tekrar denenmez.
                 $success = curl_exec($ch);
-                $errno = curl_errno($ch);
-
-                // SSL sertifika paketinde sorun varsa güvenli geri çekilme
-                if (($errno === 60 || $errno === 77) && !$success) {
-                    rewind($fp);
-                    ftruncate($fp, 0);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                    $success = curl_exec($ch);
-                }
 
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
