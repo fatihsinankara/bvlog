@@ -46,6 +46,8 @@ Router::post('/newsletter/subscribe', [NewsletterPublicController::class, 'subsc
 Router::get('/newsletter/verify', [NewsletterPublicController::class, 'verify']);
 Router::get('/newsletter/unsubscribe', [NewsletterPublicController::class, 'unsubscribe']);
 Router::post('/newsletter/unsubscribe', [NewsletterPublicController::class, 'unsubscribe']);
+// Posta istemcileri List-Unsubscribe-Post ile oturumsuz POST atar; istek abonelik jetonuyla dogrulanir.
+Router::csrfExempt('/newsletter/unsubscribe');
 
 // 5. Kanca: Admin Yan Menüsüne "E-posta Bülteni" Linki Ekleme
 Hook::addAction('admin_sidebar_menu', function () {
@@ -106,7 +108,7 @@ Hook::addAction('post_saved', function ($postId) {
 
     $title = htmlspecialchars((string) $post['title'], ENT_QUOTES, 'UTF-8');
     $summary = htmlspecialchars((string) (($post['summary'] ?? '') ?: excerpt((string) $post['content'], 180)), ENT_QUOTES, 'UTF-8');
-    $postLink = htmlspecialchars(rtrim(base_url(), '/') . post_url($post), ENT_QUOTES, 'UTF-8');
+    $postLink = htmlspecialchars(post_url($post), ENT_QUOTES, 'UTF-8');
 
     $subject = 'Yeni Yazı: ' . (string) $post['title'];
     $bodyHtml = <<<HTML
@@ -125,7 +127,7 @@ HTML;
 
     foreach ($recipients as $sub) {
         $unsubToken = urlencode((string) ($sub['unsubscribe_token'] ?? ''));
-        $unsubFullUrl = rtrim(base_url(), '/') . url('/newsletter/unsubscribe?token=' . $unsubToken);
+        $unsubFullUrl = url('/newsletter/unsubscribe?token=' . $unsubToken);
         $wrapped = NewsletterMailer::wrapNewsletterHtml($subject, $bodyHtml, $sub);
         $res = NewsletterMailer::sendSingle((string) $sub['email'], $subject, $wrapped, [
             'unsubscribe_url' => $unsubFullUrl,
