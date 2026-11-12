@@ -327,6 +327,6 @@ if ($isSettingsRoute && !isset($settingsMenuItems[$activeSettingsTab])) {
     <?= View::renderPartial('components/media-picker') ?>
     <?= View::renderPartial('components/confirm-modal') ?>
 
-    <script type="module" src="<?= e(asset('js/app.js')) ?>"></script>
+    <script type="module" src="<?= e(asset('js/admin.js')) ?>"></script>
 </body>
 </html>

@@ -32,6 +32,14 @@
         </form>
     </div>
 
+    <form action="<?= e(url('/admin/media/variants')) ?>" method="POST" class="flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-500">
+        <?= csrf_field() ?>
+        <span>Eski görseller için küçük ekran boyutları (srcset) eksikse buradan oluşturabilirsiniz.</span>
+        <button type="submit" class="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold hover:bg-zinc-50">
+            <i class="fa-solid fa-images mr-1"></i>Duyarlı boyutları oluştur
+        </button>
+    </form>
+
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <!-- Sol: Görsel Izgarası -->
         <div :class="activeItem ? 'lg:col-span-8' : 'lg:col-span-12'" class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">

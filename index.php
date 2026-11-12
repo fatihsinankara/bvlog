@@ -14,6 +14,10 @@ Core\ErrorHandler::register((bool) ($appConfig['debug'] ?? false));
 
 Core\Security::sendHeaders();
 
+// Oturumsuz GET yanitlarina ETag ve dogrulamali onbellek basliklari (bkz. Core\HttpCache).
+// Diger kapanis fonksiyonlarindan once kaydedilmeli.
+Core\HttpCache::begin();
+
 $currentPath = Core\Request::path();
 $hasSessionCookie = isset($_COOKIE['BVLOG_SESSION']) && $_COOKIE['BVLOG_SESSION'] !== '';
 if (
@@ -121,6 +125,7 @@ Core\Router::post('/admin/categories/{id}/delete', [App\Controllers\Admin\Catego
 Core\Router::get('/admin/media', [App\Controllers\Admin\MediaController::class, 'index'], ['auth']);
 Core\Router::get('/admin/media/json', [App\Controllers\Admin\MediaController::class, 'listJson'], ['auth']);
 Core\Router::post('/admin/media/upload', [App\Controllers\Admin\MediaController::class, 'upload'], ['auth']);
+Core\Router::post('/admin/media/variants', [App\Controllers\Admin\MediaController::class, 'generateVariants'], ['auth']);
 Core\Router::post('/admin/media/{id}/update', [App\Controllers\Admin\MediaController::class, 'update'], ['auth']);
 Core\Router::post('/admin/media/{id}/delete', [App\Controllers\Admin\MediaController::class, 'delete'], ['auth']);
 

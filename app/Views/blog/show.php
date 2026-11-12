@@ -48,13 +48,14 @@ use Core\View;
         <?php endif; ?>
     </header>
 
-    <!-- Öne Çıkan Görsel (1080px WebP, LCP yüksek öncelikli) -->
+    <!-- Öne Çıkan Görsel (1600px WebP + srcset, LCP yüksek öncelikli) -->
     <?php if (!empty($post['cover_image'])): ?>
         <figure class="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
             <img src="<?= e(url($post['cover_image'])) ?>"
                  alt="<?= e($post['title']) ?>"
                  fetchpriority="high"
                  <?= \Core\ImageProcessor::sizeAttributes((string) $post['cover_image'], 1080) ?>
+                 <?= \Core\ImageProcessor::srcsetAttributes((string) $post['cover_image'], '(min-width: 56rem) 848px, 100vw') ?>
                  class="w-full h-auto object-cover">
         </figure>
     <?php endif; ?>

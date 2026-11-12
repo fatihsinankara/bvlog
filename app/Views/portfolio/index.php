@@ -19,6 +19,7 @@
                                 <img src="<?= e(url($proj['thumbnail'])) ?>"
                                      alt="<?= e($proj['title']) ?>"
                                      loading="lazy"
+                                     <?= \Core\ImageProcessor::srcsetAttributes((string) $proj['thumbnail'], '(min-width: 56rem) 412px, (min-width: 48rem) 50vw, 100vw') ?>
                                      class="w-full h-full object-cover">
                             </a>
                         <?php endif; ?>

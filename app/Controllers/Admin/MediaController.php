@@ -32,7 +32,7 @@ class MediaController extends Controller
     public function upload(): void
     {
         $file = Request::file('file') ?? Request::file('image');
-        $mode = Request::post('mode', 'inline'); // 'featured' (1080px) veya 'inline' (orijinal boyut WebP)
+        $mode = Request::post('mode', 'inline'); // 'featured' (1600px + srcset varyantlari) veya 'inline' (orijinal boyut WebP)
         $title = Request::post('title', '');
         $alt = Request::post('alt_text', '');
 
@@ -104,6 +104,7 @@ class MediaController extends Controller
             if (file_exists($absFile) && is_file($absFile)) {
                 @unlink($absFile);
             }
+            ImageProcessor::deleteVariants((string) $item['filepath']);
             Media::deleteById((int) $item['id']);
         }
 
@@ -112,6 +113,48 @@ class MediaController extends Controller
         }
 
         Session::flash('success', 'Görsel silindi.');
+        $this->redirect('/admin/media');
+    }
+
+    /**
+     * Mevcut gorseller icin eksik srcset varyantlarini uretir. Uzun surmemesi
+     * icin her istekte en fazla ~20 saniye calisir; kalanlar icin tekrar
+     * calistirilabilir.
+     */
+    public function generateVariants(): void
+    {
+        if (!function_exists('imagewebp')) {
+            Session::flash('error', 'Sunucuda GD/WebP desteği bulunmadığı için boyutlar oluşturulamadı.');
+            $this->redirect('/admin/media');
+        }
+
+        @set_time_limit(60);
+        $deadline = microtime(true) + 20;
+        $rows = \Core\Database::fetchAll(
+            "SELECT id, filepath FROM media WHERE mime_type = 'image/webp' AND width > :w ORDER BY id DESC",
+            ['w' => min(ImageProcessor::VARIANT_WIDTHS)]
+        );
+
+        $created = 0;
+        $done = 0;
+        foreach ($rows as $row) {
+            if (microtime(true) > $deadline) {
+                break;
+            }
+            $created += ImageProcessor::generateVariants((string) $row['filepath']);
+            $done++;
+        }
+
+        if ($created > 0) {
+            \Core\Cache::flushAll();
+        }
+
+        $remaining = count($rows) - $done;
+        $message = "{$done} görsel tarandı, {$created} yeni boyut oluşturuldu.";
+        if ($remaining > 0) {
+            $message .= " Kalan {$remaining} görsel için işlemi tekrar çalıştırın.";
+        }
+        Session::flash('success', $message);
         $this->redirect('/admin/media');
     }
 }

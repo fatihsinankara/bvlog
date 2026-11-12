@@ -222,6 +222,7 @@ foreach ($sections as $section) {
                                         <img src="<?= e(url($post['cover_image'])) ?>"
                                              alt="<?= e($post['title']) ?>"
                                              loading="lazy"
+                                             <?= \Core\ImageProcessor::srcsetAttributes((string) $post['cover_image'], '(min-width: 56rem) 412px, (min-width: 40rem) 50vw, 100vw') ?>
                                              class="w-full h-full object-cover">
                                     </a>
                                 <?php endif; ?>
@@ -304,6 +305,7 @@ foreach ($sections as $section) {
                                         <img src="<?= e(url($post['cover_image'])) ?>"
                                              alt="<?= e($post['title']) ?>"
                                              loading="lazy"
+                                             <?= \Core\ImageProcessor::srcsetAttributes((string) $post['cover_image'], '(min-width: 40rem) 144px, 100vw') ?>
                                              class="w-full h-full object-cover">
                                     </a>
                                 <?php endif; ?>

@@ -44,6 +44,7 @@
                  alt="<?= e($project['title']) ?>"
                  fetchpriority="high"
                  <?= \Core\ImageProcessor::sizeAttributes((string) $project['thumbnail'], 1080) ?>
+                 <?= \Core\ImageProcessor::srcsetAttributes((string) $project['thumbnail'], '(min-width: 56rem) 848px, 100vw') ?>
                  class="w-full h-auto object-cover">
         </figure>
     <?php endif; ?>

@@ -39,7 +39,7 @@ Varsayılan olarak yalın bir kişisel blog olarak çalışır; ihtiyacınıza g
 ### 4. Zengin İçerik Editörü, Çoklu Kategori & Zamanlanmış Yazılar
 - **Sürükle-Bırak & Panodan Görsel Yapıştırma**: Editör içine `Ctrl+V` ile doğrudan görsel yapıştırma.
 - **Otomatik WebP Görsel Optimizasyonu**:
-  - **Öne Çıkan Görseller**: En-boy oranı korunarak maksimum `1080px` genişliğe boyutlandırılır, sıkıştırılır ve `.webp` formatında kaydedilir.
+  - **Öne Çıkan Görseller**: En-boy oranı korunarak maksimum `1600px` genişliğe boyutlandırılır, sıkıştırılır ve `.webp` formatında kaydedilir. Küçük ekranlar için 480/768/1080 px varyantları da üretilir ve `srcset` ile sunulur.
   - **İçerik İçi Görseller**: Çözünürlük bozulmadan kayıpsız sıkıştırmayla `.webp` formatına dönüştürülür.
 - **Akıllı Embed Desteği**: Editöre yapıştırılan YouTube, Spotify, CodePen, X (Twitter) ve GitHub Gist bağlantıları otomatik olarak duyarlı (responsive) medya kartlarına dönüştürülür.
 - **Çoklu Kategori Desteği**: Bir yazıyı birden fazla kategoriye atayabilme; her kategoriye özel ikon, renk kodu ve arşiv kapak görseli tanımlayabilme.

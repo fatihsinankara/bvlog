@@ -130,6 +130,7 @@ use Core\View;
                             <img src="<?= e(url($post['cover_image'])) ?>"
                                  alt="<?= e($post['title']) ?>"
                                  loading="lazy"
+                                 <?= \Core\ImageProcessor::srcsetAttributes((string) $post['cover_image'], '(min-width: 40rem) 160px, 100vw') ?>
                                  class="w-full h-full object-cover">
                         </a>
                     <?php endif; ?>
