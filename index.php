@@ -14,6 +14,10 @@ Core\ErrorHandler::register((bool) ($appConfig['debug'] ?? false));
 
 Core\Security::sendHeaders();
 
+// Oturumsuz GET yanitlarina ETag ve dogrulamali onbellek basliklari (bkz. Core\HttpCache).
+// Diger kapanis fonksiyonlarindan once kaydedilmeli.
+Core\HttpCache::begin();
+
 $currentPath = Core\Request::path();
 $hasSessionCookie = isset($_COOKIE['BVLOG_SESSION']) && $_COOKIE['BVLOG_SESSION'] !== '';
 if (
