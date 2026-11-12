@@ -98,10 +98,11 @@ Varsayılan olarak yalın bir kişisel blog olarak çalışır; ihtiyacınıza g
 
 ## 📋 Sistem Gereksinimleri
 
-- **PHP**: `8.1` veya üzeri (`8.2` / `8.3` / `8.4` tam uyumlu)
+- **PHP**: `8.2` veya üzeri (`8.2` / `8.3` / `8.4` tam uyumlu). PHP 8.1 artık güvenlik yaması almadığı için desteklenmez; kullandığınız sürümün en son yama sürümünde olduğundan emin olun.
 - **Veritabanı**: MySQL `5.7+` veya MariaDB `10.3+`
 - **PHP Eklentileri**: `pdo_mysql`, `gd` (WebP desteğiyle), `mbstring`, `fileinfo`, `zip` (OTA güncelleme ve tema/eklenti ZIP yükleme için), `curl` veya `allow_url_fopen` (GitHub sürüm kontrolü için)
 - **Web Sunucusu**: Apache (`mod_rewrite` aktif) veya LiteSpeed / Nginx. Nginx için depodaki `nginx.conf.example` kurallarını sunucu bloğuna ekleyin; `.htaccess` Nginx'te çalışmaz.
+- **PHP güvenlik ayarı**: Bvlog, kullanmadığı `session.upload_progress` özelliğini `.htaccess` (Apache mod_php, LiteSpeed) ve `.user.ini` (PHP-FPM/CGI) ile kapatır. Sunucunuzda zaten bir `.user.ini` dosyası varsa (ör. cPanel MultiPHP INI Düzenleyici) güncelleme bu dosyayı ezmez; `session.upload_progress.enabled = 0` satırını kendi dosyanıza ekleyin.
 
 ---
 
