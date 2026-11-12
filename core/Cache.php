@@ -405,7 +405,9 @@ class Cache
 
         $groupsToFlush = match ($table) {
             'posts', 'post_categories', 'post_tags', 'tags', 'categories', 'collections', 'collection_posts' => ['blog', 'home', 'feeds'],
-            'comments' => ['blog'],
+            // Yorumlar yalnizca yazi sayfasinda gorunur; Comment modeli ilgili
+            // blog:post:{slug} kaydini kendisi siler (bkz. Comment::forgetPostCache).
+            'comments' => [],
             'projects' => ['portfolio', 'home', 'feeds'],
             'cv_experiences', 'cv_educations', 'cv_skills', 'cv_skill_categories' => ['cv', 'home'],
             'users' => ['settings', 'home', 'blog', 'cv'],
