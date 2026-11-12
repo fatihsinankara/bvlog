@@ -1,0 +1,27 @@
+# Statik analiz: docker run --rm -v "$PWD":/app -w /app ghcr.io/phpstan/phpstan:2-php8.2 analyse
+# phpstan-baseline.neon bilinen ve ayri PR'larda duzeltilen hatalari tutar;
+# duzeltmeler merge edildikce ilgili satirlar silinebilir.
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 3
+    phpVersion: 80100
+    paths:
+        - index.php
+        - cron.php
+        - app
+        - core
+        - plugins
+        - themes
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+    ignoreErrors:
+        # Gorunumler degiskenlerini View::render() icindeki extract() ile alir.
+        -
+            identifier: variable.undefined
+            paths:
+                - app/Views/*
+                - themes/*/views/*
+                - plugins/*/views/*
+    reportUnmatchedIgnoredErrors: false
