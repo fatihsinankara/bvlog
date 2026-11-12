@@ -57,6 +57,13 @@ if (setting('maintenance_mode', '0') === '1' && !str_starts_with($currentPath, '
     exit;
 }
 
+// 4b. Arama motoru sinyalleri: indeksleme kapaliyken tum yanitlara noindex
+// basligi eklenir; `?page=1` parametresiz adrese kalici yonlendirilir.
+if (setting('seo_allow_index', '1') !== '1') {
+    header('X-Robots-Tag: noindex, nofollow');
+}
+Core\Seo::redirectFirstPage();
+
 // Zamanlanmış Görevler (Cron) HTTP Uç Noktası
 Core\Router::get('/cron', [App\Controllers\CronController::class, 'handle']);
 

@@ -88,7 +88,7 @@ use Core\View;
                 <article class="py-6 flex flex-col sm:flex-row sm:items-start justify-between gap-5">
                     <div class="space-y-2 flex-1">
                         <div class="flex flex-wrap items-center gap-2.5 text-xs text-zinc-500">
-                            <time><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></time>
+                            <time datetime="<?= e(date('c', strtotime($post['published_at'] ?: $post['created_at']))) ?>"><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></time>
                             <span>&middot;</span>
                             <span><?= post_reading_minutes($post) ?> dk okuma</span>
                             <?php if (!empty($post['categories'])): ?>
@@ -143,13 +143,13 @@ use Core\View;
                 <div>Sayfa <?= (int) $page ?> / <?= (int) $totalPages ?></div>
                 <div class="flex items-center gap-2">
                     <?php if ($page > 1): ?>
-                        <a href="?page=<?= $page - 1 ?><?= $search ? '&q=' . urlencode($search) : '' ?>"
+                        <a href="<?= e(\Core\Seo::pageUrl($page - 1, ['q' => $search ?? ''])) ?>"
                            class="px-3 py-1.5 rounded border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-medium">
                             &larr; Önceki
                         </a>
                     <?php endif; ?>
                     <?php if ($page < $totalPages): ?>
-                        <a href="?page=<?= $page + 1 ?><?= $search ? '&q=' . urlencode($search) : '' ?>"
+                        <a href="<?= e(\Core\Seo::pageUrl($page + 1, ['q' => $search ?? ''])) ?>"
                            class="px-3 py-1.5 rounded border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-medium">
                             Sonraki &rarr;
                         </a>

@@ -34,6 +34,34 @@ class Category extends Model
         }, null, 'blog', 'Kategori Listesi ve Yazı Sayaçları');
     }
 
+    /**
+     * Site haritasi icin kategoriler ve her birindeki en son yazi degisikligi.
+     * Yazisi olmayan kategoride `last_post_at` NULL doner.
+     */
+    public static function sitemapEntries(): array
+    {
+        try {
+            return Database::fetchAll(
+                "SELECT c.slug, c.created_at, MAX(p.updated_at) AS last_post_at
+                 FROM categories c
+                 LEFT JOIN posts p ON p.status = 'published'
+                     AND (p.category_id = c.id OR EXISTS (
+                         SELECT 1 FROM post_categories pc WHERE pc.post_id = p.id AND pc.category_id = c.id
+                     ))
+                 GROUP BY c.id, c.slug, c.created_at
+                 ORDER BY c.id ASC"
+            );
+        } catch (\Throwable $e) {
+            return Database::fetchAll(
+                "SELECT c.slug, c.created_at, MAX(p.updated_at) AS last_post_at
+                 FROM categories c
+                 LEFT JOIN posts p ON p.status = 'published' AND p.category_id = c.id
+                 GROUP BY c.id, c.slug, c.created_at
+                 ORDER BY c.id ASC"
+            );
+        }
+    }
+
     public static function ensureUniqueSlug(string $slug, ?int $ignoreId = null): string
     {
         $base = $slug;

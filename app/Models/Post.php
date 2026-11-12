@@ -107,6 +107,23 @@ class Post extends Model
         }
     }
 
+    /**
+     * Site haritasi icin yayindaki yazilarin hafif listesi (icerik ve
+     * kategori eslemesi yuklenmez).
+     */
+    public static function sitemapEntries(int $limit = 50000): array
+    {
+        $limit = max(1, $limit);
+        return Database::fetchAll(
+            "SELECT p.slug, p.published_at, p.created_at, p.updated_at, c.slug AS category_slug
+             FROM posts p
+             LEFT JOIN categories c ON c.id = p.category_id
+             WHERE p.status = 'published'
+             ORDER BY COALESCE(p.published_at, p.created_at) DESC, p.id DESC
+             LIMIT {$limit}"
+        );
+    }
+
     public static function featuredPosts(int $limit = 3): array
     {
         $posts = Database::fetchAll(

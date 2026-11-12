@@ -27,6 +27,23 @@ class Collection
         return Database::fetchAll($sql);
     }
 
+    /**
+     * Site haritasi icin yayindaki yazisi olan koleksiyonlar. `last_modified`,
+     * koleksiyonun ve icindeki yazilarin en son degisiklik zamanidir.
+     */
+    public static function sitemapEntries(): array
+    {
+        return Database::fetchAll(
+            "SELECT c.slug, GREATEST(c.updated_at, MAX(p.updated_at)) AS last_modified
+             FROM collections c
+             INNER JOIN collection_posts cp ON cp.collection_id = c.id
+             INNER JOIN posts p ON p.id = cp.post_id AND p.status = 'published'
+             WHERE c.status = 'published'
+             GROUP BY c.id, c.slug, c.updated_at
+             ORDER BY c.id DESC"
+        );
+    }
+
     public static function allPublishedWithCount(): array
     {
         $sql = "SELECT c.*, 

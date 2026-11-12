@@ -150,7 +150,7 @@ class Migrator
 
             self::addColumnIfNotExists($pdo, 'posts', 'reading_minutes', 'SMALLINT UNSIGNED NOT NULL DEFAULT 1');
             try {
-                $pdo->exec('UPDATE posts SET reading_minutes = GREATEST(1, CEILING(CHAR_LENGTH(`content`) / 1200))');
+                $pdo->exec('UPDATE posts SET reading_minutes = GREATEST(1, CEILING(CHAR_LENGTH(`content`) / 1200)), updated_at = updated_at');
             } catch (\Throwable $e) {
                 // Sessizce geç
             }

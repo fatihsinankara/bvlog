@@ -5,9 +5,23 @@ $authorName   = $author['name'] ?? setting('author_name', 'Yazar');
 $authorTitle  = $author['role_title'] ?? setting('author_title', 'Yazılım Geliştirici');
 $authorBio    = $author['bio'] ?? setting('author_bio', '');
 $authorAvatar = $author['avatar'] ?? '';
+
+// Kahraman bolumu kapaliysa ya da h1 basmayan bir stildeyse sayfa basligi
+// yalnizca ekran okuyucular ve arama motorlari icin verilir.
+$heroRendersH1 = false;
+foreach ($sections as $section) {
+    if (($section['id'] ?? '') === 'hero' && !empty($section['enabled'])) {
+        $heroRendersH1 = in_array($heroStyle, ['minimal_bio', 'split'], true)
+            || ($heroStyle === 'featured_post' && !empty($latestPosts[0]));
+        break;
+    }
+}
 ?>
 
 <div class="space-y-14">
+    <?php if (!$heroRendersH1): ?>
+        <h1 class="sr-only"><?= e(setting('site_title', 'Bvlog')) ?></h1>
+    <?php endif; ?>
     <?php foreach ($sections as $section): ?>
         <?php if (empty($section['enabled'])) continue; ?>
 
@@ -248,7 +262,7 @@ $authorAvatar = $author['avatar'] ?? '';
                             <article class="py-6 flex flex-col sm:flex-row sm:items-start justify-between gap-5">
                                 <div class="space-y-2 flex-1">
                                     <div class="flex flex-wrap items-center gap-2.5 text-xs text-zinc-500">
-                                        <time><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></time>
+                                        <time datetime="<?= e(date('c', strtotime($post['published_at'] ?: $post['created_at']))) ?>"><?= e(format_date($post['published_at'] ?: $post['created_at'])) ?></time>
                                         <span>&middot;</span>
                                         <span><?= post_reading_minutes($post) ?> dk okuma</span>
                                         <?php if (!empty($post['categories'])): ?>

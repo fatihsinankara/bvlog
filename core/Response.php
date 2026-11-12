@@ -76,10 +76,10 @@ class Response
         exit;
     }
 
-    public static function xml(string $xml, int $status = 200): never
+    public static function xml(string $xml, int $status = 200, string $contentType = 'application/xml'): never
     {
         http_response_code($status);
-        header('Content-Type: application/xml; charset=UTF-8');
+        header('Content-Type: ' . $contentType . '; charset=UTF-8');
         echo $xml;
         exit;
     }

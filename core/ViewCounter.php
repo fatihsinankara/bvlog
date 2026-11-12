@@ -87,8 +87,10 @@ class ViewCounter
 
         $updated = 0;
         foreach ($counts as $id => $n) {
+            // updated_at kendi degerine atanir; yoksa ON UPDATE CURRENT_TIMESTAMP
+            // her goruntulenme aktariminda yazinin degisiklik tarihini bugune ceker.
             Database::query(
-                'UPDATE posts SET views_count = views_count + :n WHERE id = :id',
+                'UPDATE posts SET views_count = views_count + :n, updated_at = updated_at WHERE id = :id',
                 ['n' => $n, 'id' => $id]
             );
             $updated += $n;
