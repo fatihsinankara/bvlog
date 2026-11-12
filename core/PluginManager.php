@@ -152,6 +152,56 @@ class PluginManager
         Setting::setJson('active_plugins', $active);
     }
 
+    /** Calisma zamani hatasinda karantina esigi: bu pencerede bu kadar hata. */
+    private const RUNTIME_ERROR_LIMIT = 3;
+    private const RUNTIME_ERROR_WINDOW = 600;
+
+    /**
+     * Kanca geri cagrisindan gelen hatayi isler. Uyari, bildirim ve kullanimdan
+     * kaldirma mesajlari yalnizca loglanir. Diger hatalar sayilir; eklenti ancak
+     * kisa surede tekrar eden hatalarda karantinaya alinir. Boylece gecici bir
+     * kesinti ya da tek seferlik bir uyari eklentiyi kalici kapatmaz.
+     */
+    public static function handleRuntimeError(string $pluginId, \Throwable $e): void
+    {
+        $minorSeverities = [E_WARNING, E_NOTICE, E_DEPRECATED, E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED];
+        $isMinor = $e instanceof \ErrorException && in_array($e->getSeverity(), $minorSeverities, true);
+
+        self::logPluginLine(sprintf(
+            '%s [%s]: %s (%s:%d)',
+            $isMinor ? 'PLUGIN WARNING' : 'PLUGIN ERROR',
+            $pluginId,
+            $e->getMessage(),
+            basename($e->getFile()),
+            $e->getLine()
+        ));
+
+        if ($isMinor) {
+            return;
+        }
+
+        $key = 'plugin_runtime_error:' . $pluginId;
+        if (RateLimiter::hit($key, self::RUNTIME_ERROR_WINDOW) >= self::RUNTIME_ERROR_LIMIT) {
+            RateLimiter::clear($key);
+            self::quarantine($pluginId, $e->getMessage(), $e->getTraceAsString());
+        }
+    }
+
+    public static function isQuarantined(string $pluginId): bool
+    {
+        return array_key_exists($pluginId, Setting::getJson('quarantined_plugins', []));
+    }
+
+    private static function logPluginLine(string $message): void
+    {
+        $logDir = BVLOG_ROOT . '/storage/logs';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0755, true);
+        }
+        $message = str_replace(["\r", "\n"], ' ', $message);
+        @file_put_contents($logDir . '/plugins.log', '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n", FILE_APPEND);
+    }
+
     public static function quarantine(string $pluginId, string $errorMsg, string $trace): void
     {
         self::deactivate($pluginId);
