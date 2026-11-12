@@ -24,6 +24,19 @@
 # Dizin listelemeyi kapat
 Options -Indexes
 
+# PHP oturum yukleme ilerlemesi (session.upload_progress) Bvlog'da kullanilmiyor.
+# Kapali tutulmasi, bu ozelligi hedef alan PHP aciklarina karsi ek bir onlemdir
+# (bkz. CVE-2026-109618, CVE-2026-109619). PHP-FPM/CGI icin ayni ayar .user.ini'de.
+<IfModule mod_php.c>
+    php_flag session.upload_progress.enabled off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag session.upload_progress.enabled off
+</IfModule>
+<IfModule Litespeed>
+    php_flag session.upload_progress.enabled off
+</IfModule>
+
 # Güvenlik Başlıkları
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"

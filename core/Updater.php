@@ -346,6 +346,12 @@ class Updater
                     continue;
                 }
 
+                // Barindirma panelleri (cPanel MultiPHP INI vb.) kendi .user.ini dosyasini
+                // yazar; var olan dosya ezilmez, yalnizca eksikse paketteki eklenir.
+                if ($normalized === '.user.ini' && is_file(BVLOG_ROOT . '/.user.ini')) {
+                    continue;
+                }
+
                 $destPath = BVLOG_ROOT . '/' . $normalized;
 
                 if (str_ends_with($normalized, '/')) {
