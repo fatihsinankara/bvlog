@@ -1,0 +1,49 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Function excerpt not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: plugins/newsletter/Controllers/NewsletterAdminController.php
+
+		-
+			message: '#^Call to an undefined static method Core\\Database\:\:lastInsertId\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: plugins/newsletter/Models/Campaign.php
+
+		-
+			message: '#^Call to an undefined static method Core\\Database\:\:lastInsertId\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: plugins/newsletter/Models/Subscriber.php
+
+		-
+			message: '#^Function excerpt not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: plugins/newsletter/plugin.php
+
+		-
+			message: '#^Function excerpt not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: plugins/newsletter/views/admin/index.php
+
+		-
+			message: '#^Call to static method path\(\) on an unknown class Request\.$#'
+			identifier: class.notFound
+			count: 2
+			path: themes/paper/views/blog/index.php
+
+		-
+			message: '#^Function url invoked with 2 parameters, 0\-1 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: themes/paper/views/blog/index.php
+
+		-
+			message: '#^Call to static method path\(\) on an unknown class Request\.$#'
+			identifier: class.notFound
+			count: 1
+			path: themes/paper/views/blog/show.php
