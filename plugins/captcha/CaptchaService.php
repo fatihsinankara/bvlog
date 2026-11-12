@@ -71,26 +71,63 @@ class CaptchaService
 
         if ($provider === self::PROVIDER_CLOUDFLARE) {
             $siteKey = htmlspecialchars($config['cf_site_key'], ENT_QUOTES, 'UTF-8');
-            return <<<HTML
-<div class="bvlog-captcha-box my-3">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+            $box = <<<HTML
+<div class="bvlog-captcha-box my-3" data-captcha-src="https://challenges.cloudflare.com/turnstile/v0/api.js">
     <div class="cf-turnstile" data-sitekey="{$siteKey}" data-theme="{$theme}"></div>
 </div>
 HTML;
+            return $box . self::lazyLoaderScript();
         }
 
         if ($provider === self::PROVIDER_RECAPTCHA) {
             $siteKey = htmlspecialchars($config['rc_site_key'], ENT_QUOTES, 'UTF-8');
             $rcTheme = ($theme === 'dark') ? 'dark' : 'light';
-            return <<<HTML
-<div class="bvlog-captcha-box my-3">
-    <script src="https://www.google.com/recaptcha/api.js?hl=tr" async defer></script>
+            $box = <<<HTML
+<div class="bvlog-captcha-box my-3" data-captcha-src="https://www.google.com/recaptcha/api.js?hl=tr">
     <div class="g-recaptcha" data-sitekey="{$siteKey}" data-theme="{$rcTheme}"></div>
 </div>
 HTML;
+            return $box . self::lazyLoaderScript();
         }
 
         return '';
+    }
+
+    /**
+     * Captcha saglayicisinin betigini sayfa acilisinda degil, form gorunur alana
+     * yaklastiginda ya da formdaki bir alana odaklanildiginda yukler. Yazinin
+     * altindaki yorum formu icin ucuncu taraf betigi ilk yuklemeyi yavaslatmaz.
+     * Saglayicilar betik yuklendiginde .cf-turnstile / .g-recaptcha ogelerini kendisi isler.
+     */
+    private static function lazyLoaderScript(): string
+    {
+        return <<<'HTML'
+<script>
+(function (box) {
+    if (!box) { return; }
+    var src = box.getAttribute('data-captcha-src');
+    var loaded = window.__bvlogCaptchaLoaded = window.__bvlogCaptchaLoaded || {};
+    var load = function () {
+        if (loaded[src]) { return; }
+        loaded[src] = true;
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        document.head.appendChild(s);
+    };
+    var form = box.closest('form');
+    if (form) { form.addEventListener('focusin', load, { once: true }); }
+    if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+            if (entries.some(function (e) { return e.isIntersecting; })) { io.disconnect(); load(); }
+        }, { rootMargin: '300px' });
+        io.observe(box);
+    } else {
+        load();
+    }
+})(document.currentScript && document.currentScript.previousElementSibling);
+</script>
+HTML;
     }
 
     public static function verify(
