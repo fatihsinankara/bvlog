@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Güvenlik açığı bildir
+    url: https://github.com/fatihsinankara/bvlog/security/advisories/new
+    about: Güvenlik açıklarını herkese açık issue yerine buradan özel olarak bildirin.

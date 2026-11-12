@@ -191,6 +191,12 @@ Hook::addFilter('post_content', function (string $content): string {
 
 ---
 
+## 🤝 Katkı ve Güvenlik
+
+Katkı vermek istiyorsanız geliştirme ortamı, testler ve commit kuralları için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasına bakın. Güvenlik açıklarını herkese açık issue olarak değil, [SECURITY.md](SECURITY.md) dosyasında anlatılan özel kanaldan bildirin.
+
+---
+
 ## 📄 Lisans
 
 Bu proje **MIT Lisansı** altında tamamen ücretsiz ve açık kaynak olarak sunulmaktadır. Dilediğiniz gibi kullanabilir, değiştirebilir ve dağıtabilirsiniz.
