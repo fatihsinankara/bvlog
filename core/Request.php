@@ -30,12 +30,28 @@ class Request
 
     public static function get(string $key, mixed $default = null): mixed
     {
-        return isset($_GET[$key]) ? (is_string($_GET[$key]) ? trim($_GET[$key]) : $_GET[$key]) : $default;
+        return self::pick($_GET, $key, $default);
     }
 
     public static function post(string $key, mixed $default = null): mixed
     {
-        return isset($_POST[$key]) ? (is_string($_POST[$key]) ? trim($_POST[$key]) : $_POST[$key]) : $default;
+        return self::pick($_POST, $key, $default);
+    }
+
+    /**
+     * Dizi degeri yalnizca varsayilan da dizi ise dondurulur. Aksi halde
+     * ?q[]=x gibi girdiler dize bekleyen kodda TypeError uretiyordu.
+     */
+    private static function pick(array $source, string $key, mixed $default): mixed
+    {
+        if (!isset($source[$key])) {
+            return $default;
+        }
+        $value = $source[$key];
+        if (is_string($value)) {
+            return trim($value);
+        }
+        return is_array($default) ? $value : $default;
     }
 
     public static function input(string $key, mixed $default = null): mixed
