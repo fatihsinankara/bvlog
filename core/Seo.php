@@ -4,6 +4,71 @@ namespace Core;
 
 class Seo
 {
+    /** JSON-LD ciktisinin <script> blogunu kapatamamasi icin gereken bayraklar. */
+    private const JSON_LD_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        | JSON_INVALID_UTF8_SUBSTITUTE;
+
+    /**
+     * Istegin kanonik adresi: sorgu dizesi atilir, yalnizca 1'den buyuk
+     * `page` degeri korunur. utm_*, fbclid gibi parametreler ayri adres uretmez.
+     */
+    public static function canonicalUrl(): string
+    {
+        $url = url(Request::path());
+        $page = self::pageParam();
+        return $page !== null && $page > 1 ? $url . '?page=' . $page : $url;
+    }
+
+    /**
+     * `?page=1` iceren GET isteklerini parametresiz adrese 301 ile yonlendirir.
+     * Diger sorgu parametreleri (or. arama terimi) korunur.
+     */
+    public static function redirectFirstPage(): void
+    {
+        if (Request::method() !== 'GET' || self::pageParam() !== 1) {
+            return;
+        }
+        $path = Request::path();
+        if (str_starts_with($path, '/admin') || str_starts_with($path, '/install')) {
+            return;
+        }
+
+        $query = $_GET;
+        unset($query['page']);
+        $qs = http_build_query($query);
+        Response::redirect($path . ($qs !== '' ? '?' . $qs : ''), 301);
+    }
+
+    /**
+     * Gecerli yolun N. sayfasi. 1. sayfada `page` parametresi yazilmaz;
+     * bos degerli parametreler atilir.
+     */
+    public static function pageUrl(int $page, array $query = []): string
+    {
+        $query = array_filter($query, static fn ($v) => $v !== null && $v !== '');
+        unset($query['page']);
+        if ($page > 1) {
+            $query['page'] = $page;
+        }
+        $qs = http_build_query($query);
+        return url(Request::path()) . ($qs !== '' ? '?' . $qs : '');
+    }
+
+    public static function jsonLd(array $data): string
+    {
+        return (string) json_encode($data, self::JSON_LD_FLAGS);
+    }
+
+    private static function pageParam(): ?int
+    {
+        $page = $_GET['page'] ?? null;
+        if (!is_string($page) || !preg_match('/^[1-9][0-9]{0,8}$/', $page)) {
+            return null;
+        }
+        return (int) $page;
+    }
+
     public static function renderHead(array $meta = []): string
     {
         $siteTitle = setting('site_title', 'Bvlog');
@@ -21,7 +86,7 @@ class Seo
         $description = !empty($meta['description']) ? $meta['description'] : $siteDesc;
         $description = mb_substr(trim(strip_tags((string) $description)), 0, 165);
 
-        $canonical = $meta['canonical'] ?? current_url();
+        $canonical = $meta['canonical'] ?? self::canonicalUrl();
         $ogType = $meta['type'] ?? 'website';
         $ogImage = !empty($meta['image']) ? url($meta['image']) : (!empty($defaultOgImage) ? url($defaultOgImage) : '');
         $robots = $allowIndex ? ($meta['robots'] ?? 'index, follow') : 'noindex, nofollow';
@@ -55,8 +120,7 @@ class Seo
 
         // Schema.org JSON-LD
         if (!empty($meta['schema'])) {
-            $jsonLd = json_encode($meta['schema'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-            $out[] = '<script type="application/ld+json">' . $jsonLd . '</script>';
+            $out[] = '<script type="application/ld+json">' . self::jsonLd($meta['schema']) . '</script>';
         } else {
             // Varsayılan WebSite şeması
             $defaultSchema = [
@@ -70,8 +134,7 @@ class Seo
                     'query-input' => 'required name=search_term_string',
                 ],
             ];
-            $jsonLd = json_encode($defaultSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            $out[] = '<script type="application/ld+json">' . $jsonLd . '</script>';
+            $out[] = '<script type="application/ld+json">' . self::jsonLd($defaultSchema) . '</script>';
         }
 
         return implode("\n    ", $out) . "\n";
