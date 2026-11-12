@@ -9,10 +9,13 @@ class Comment extends Model
 {
     protected static string $table = 'comments';
 
+    /**
+     * Yazi sayfasi ve onbellegi icin; e-posta ve IP adresi secilmez.
+     */
     public static function approvedForPost(int $postId): array
     {
         return Database::fetchAll(
-            'SELECT * FROM comments WHERE post_id = :pid AND status = "approved" ORDER BY id ASC',
+            'SELECT id, post_id, author_name, content, created_at FROM comments WHERE post_id = :pid AND status = "approved" ORDER BY id ASC',
             ['pid' => $postId]
         );
     }
