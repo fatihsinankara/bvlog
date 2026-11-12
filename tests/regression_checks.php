@@ -93,11 +93,33 @@ $readingPlugin = (string) file_get_contents(BVLOG_ROOT . '/plugins/reading-progr
 check(!str_contains($readingPlugin, "'/blog/'"), 'reading progress does not depend on /blog/ prefix');
 check(str_contains($readingPlugin, "'post_before_content'"), 'reading progress listens to post_before_content');
 
-// Paper temasi: view dosyalari namespace disinda calisir, Request tam adla cagrilmali.
-$paperIndex = (string) file_get_contents(BVLOG_ROOT . '/themes/paper/views/blog/index.php');
-$usesRequest = preg_match('/(?<![\\\\\w])Request::/', $paperIndex) === 1;
-$importsRequest = str_contains($paperIndex, 'use Core\\Request;');
-check(!$usesRequest || $importsRequest, 'paper blog index does not call unqualified Request');
+// View dosyalari namespace disinda calisir; import edilmeyen sinif kisa adla cagrilirsa
+// "Class not found" hatasi olusur ve tema sessizce varsayilan gorunume duser.
+$viewFiles = array_merge(
+    glob(BVLOG_ROOT . '/themes/*/views/{,*/,*/*/}*.php', GLOB_BRACE) ?: [],
+    glob(BVLOG_ROOT . '/app/Views/{,*/,*/*/}*.php', GLOB_BRACE) ?: [],
+    glob(BVLOG_ROOT . '/plugins/*/views/{,*/,*/*/}*.php', GLOB_BRACE) ?: []
+);
+$unqualified = [];
+foreach (array_unique($viewFiles) as $viewFile) {
+    $src = (string) file_get_contents($viewFile);
+    if (preg_match('/^\s*namespace\s/m', $src)) {
+        continue;
+    }
+    preg_match_all('/^\s*use\s+([\w\\\\]+)(?:\s+as\s+(\w+))?\s*;/m', $src, $uses, PREG_SET_ORDER);
+    $imported = [];
+    foreach ($uses as $use) {
+        $parts = explode('\\', $use[1]);
+        $imported[$use[2] ?? end($parts)] = true;
+    }
+    preg_match_all('/(?<![\\\\\w$>])([A-Z]\w*)::/', $src, $calls);
+    foreach (array_unique($calls[1]) as $class) {
+        if (!isset($imported[$class]) && !in_array($class, ['PDO', 'DateTime', 'IntlDateFormatter'], true)) {
+            $unqualified[] = str_replace(BVLOG_ROOT . '/', '', $viewFile) . " {$class}::";
+        }
+    }
+}
+check($unqualified === [], 'views do not call unimported classes' . ($unqualified ? ' (' . implode(', ', $unqualified) . ')' : ''));
 
 echo $failed === 0 ? "ALL PASSED\n" : "{$failed} FAILED\n";
 exit($failed === 0 ? 0 : 1);

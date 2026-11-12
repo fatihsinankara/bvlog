@@ -74,7 +74,7 @@ use Core\View;
                 <span x-text="copied ? 'Kopyalandı!' : 'Bağlantıyı Kopyala'"></span>
             </button>
             <span class="text-zinc-300 dark:text-zinc-700">&middot;</span>
-            <a href="https://twitter.com/intent/tweet?text=<?= urlencode($post['title']) ?>&url=<?= urlencode(url(Request::path())) ?>"
+            <a href="https://twitter.com/intent/tweet?text=<?= urlencode($post['title']) ?>&url=<?= urlencode(url(\Core\Request::path())) ?>"
                target="_blank" rel="noopener noreferrer"
                class="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 transition-colors">
                 <i class="fa-brands fa-x-twitter"></i>
