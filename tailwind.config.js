@@ -14,8 +14,10 @@ export default {
     theme: {
         extend: {
             fontFamily: {
+                // Inter yuklenmiyordu; yalnizca kurulu oldugu cihazlarda gorunuyor ve
+                // sayfalar cihazdan cihaza farkli gorunuyordu. Sistem yazi tipleri kullanilir.
                 sans: [
-                    'Inter',
+                    'system-ui',
                     '-apple-system',
                     'BlinkMacSystemFont',
                     '"Segoe UI"',

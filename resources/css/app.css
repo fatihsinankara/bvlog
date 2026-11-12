@@ -1,4 +1,9 @@
-@import '@fortawesome/fontawesome-free/css/all.min.css';
+/* FontAwesome: v4/v5 uyumluluk katmanlari olmadan yalnizca kullanilan stiller.
+   Kategori simgeleri panelden serbestce secilebildigi icin simge alt kumesi yapilmaz. */
+@import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
+@import '@fortawesome/fontawesome-free/css/solid.min.css';
+@import '@fortawesome/fontawesome-free/css/regular.min.css';
+@import '@fortawesome/fontawesome-free/css/brands.min.css';
 
 @tailwind base;
 @tailwind components;

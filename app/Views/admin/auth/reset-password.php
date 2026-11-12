@@ -46,6 +46,6 @@ $valid = !empty($valid) && !empty($token);
             </form>
         <?php endif; ?>
     </div>
-    <script type="module" src="<?= e(asset('js/app.js')) ?>"></script>
+    <script type="module" src="<?= e(asset('js/admin.js')) ?>"></script>
 </body>
 </html>
