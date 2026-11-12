@@ -10,6 +10,7 @@ use App\Models\User;
 use Core\Cache;
 use Core\Controller;
 use Core\Hook;
+use Core\ImageProcessor;
 use Core\RateLimiter;
 use Core\Request;
 use Core\Response;
@@ -150,6 +151,7 @@ class BlogController extends Controller
             }
 
             $post['content'] = Hook::applyFilters('post_content', $post['content'], $post);
+            $post['content'] = ImageProcessor::enhanceContentImages((string) $post['content']);
             $tags = Post::getTags((int) $post['id']);
             $comments = is_module_active('comments') ? Comment::approvedForPost((int) $post['id']) : [];
             $author = User::firstAuthor() ?? [];

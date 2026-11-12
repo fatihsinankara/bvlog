@@ -43,7 +43,7 @@
             <img src="<?= e(url($project['thumbnail'])) ?>"
                  alt="<?= e($project['title']) ?>"
                  fetchpriority="high"
-                 width="1080"
+                 <?= \Core\ImageProcessor::sizeAttributes((string) $project['thumbnail'], 1080) ?>
                  class="w-full h-auto object-cover">
         </figure>
     <?php endif; ?>
