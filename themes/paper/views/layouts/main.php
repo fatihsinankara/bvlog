@@ -11,7 +11,7 @@ $siteTagline = setting('site_tagline', '');
 $currentPath = Request::path();
 ?>
 <!DOCTYPE html>
-<html lang="tr" x-data="{ darkMode: localStorage.getItem('bvlog_theme') === 'dark' || (!localStorage.getItem('bvlog_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches), mobileMenu: false }"
+<html lang="<?= e(app_locale()) ?>" x-data="{ darkMode: localStorage.getItem('bvlog_theme') === 'dark' || (!localStorage.getItem('bvlog_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches), mobileMenu: false }"
       x-init="$watch('darkMode', val => { localStorage.setItem('bvlog_theme', val ? 'dark' : 'light'); document.documentElement.classList.toggle('dark', val); }); document.documentElement.classList.toggle('dark', darkMode);"
       :class="{ 'dark': darkMode }">
 <head>

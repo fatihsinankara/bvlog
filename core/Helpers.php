@@ -99,6 +99,28 @@ if (!function_exists('current_url')) {
     }
 }
 
+if (!function_exists('app_locale')) {
+    /**
+     * config/app.php icindeki `locale` degerini BCP 47 bicimiyle dondurur
+     * (or. "tr", "en-US"). Gecersiz ya da eksikse "tr".
+     */
+    function app_locale(): string
+    {
+        static $locale = null;
+        if ($locale !== null) {
+            return $locale;
+        }
+
+        $file = BVLOG_ROOT . '/config/app.php';
+        $config = is_file($file) ? require $file : [];
+        $value = is_array($config) && is_string($config['locale'] ?? null) ? $config['locale'] : '';
+        $value = str_replace('_', '-', trim($value));
+
+        $locale = preg_match('/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/', $value) ? $value : 'tr';
+        return $locale;
+    }
+}
+
 if (!function_exists('asset')) {
     function asset(string $path): string
     {

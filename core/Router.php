@@ -112,7 +112,7 @@ class Router
         View::render('errors/404', [
             'code'    => $code,
             'message' => $message ?: 'Aradığınız sayfa bulunamadı veya taşınmış olabilir.',
-            'meta'    => ['title' => $code . ' Bulunamadı'],
+            'meta'    => ['title' => $code . ' Bulunamadı', 'robots' => 'noindex, follow'],
         ]);
         exit;
     }

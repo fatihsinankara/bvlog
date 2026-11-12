@@ -114,7 +114,7 @@ use Core\View;
                         <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 space-y-2">
                             <div class="flex items-center justify-between text-xs">
                                 <strong class="font-semibold text-zinc-900 dark:text-zinc-100"><?= e($c['author_name']) ?></strong>
-                                <time class="text-zinc-500"><?= e(format_date($c['created_at'], true)) ?></time>
+                                <time class="text-zinc-500" datetime="<?= e(date('c', strtotime($c['created_at']))) ?>"><?= e(format_date($c['created_at'], true)) ?></time>
                             </div>
                             <p class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line"><?= e($c['content']) ?></p>
                         </div>
