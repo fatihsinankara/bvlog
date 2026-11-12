@@ -35,5 +35,17 @@ check(str_contains($installer, "version_compare(PHP_VERSION, '8.2.0', '>=')"), '
 $updater = (string) file_get_contents($root . '/core/Updater.php');
 check(str_contains($updater, "\$normalized === '.user.ini' && is_file(BVLOG_ROOT . '/.user.ini')"), 'updater keeps an existing .user.ini');
 
+require_once $root . '/core/ErrorHandler.php';
+check(!Core\ErrorHandler::handleError(E_DEPRECATED, 'test deprecation', __FILE__, __LINE__), 'ErrorHandler ignores E_DEPRECATED');
+check(!Core\ErrorHandler::handleError(E_USER_DEPRECATED, 'test user deprecation', __FILE__, __LINE__), 'ErrorHandler ignores E_USER_DEPRECATED');
+
+$threw = false;
+try {
+    Core\ErrorHandler::handleError(E_WARNING, 'test warning', __FILE__, __LINE__);
+} catch (\ErrorException) {
+    $threw = true;
+}
+check($threw, 'ErrorHandler throws on E_WARNING');
+
 echo $failed === 0 ? "ALL PASSED\n" : "{$failed} FAILED\n";
 exit($failed === 0 ? 0 : 1);

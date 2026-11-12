@@ -27,6 +27,12 @@ class ErrorHandler
             return false;
         }
 
+        // Deprecation uyarilari (E_DEPRECATED / E_USER_DEPRECATED) olumcul istisna
+        // firlatmamali. PHP surum gecislerinde motor uyarilari sayfayi 500'e dusurmemeli.
+        if ($severity === E_DEPRECATED || $severity === E_USER_DEPRECATED) {
+            return false;
+        }
+
         throw new ErrorException($message, 0, $severity, $file, $line);
     }
 

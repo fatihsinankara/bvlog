@@ -102,7 +102,7 @@ class Cron
                 }
                 return [
                     'affected' => 0,
-                    'message'  => 'Sistem güncel (v' . ($info['current_version'] ?? '1.3.2') . ').',
+                    'message'  => 'Sistem güncel (v' . ($info['current_version'] ?? '1.3.3') . ').',
                 ];
             },
         ]);

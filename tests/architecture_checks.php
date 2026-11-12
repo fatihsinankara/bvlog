@@ -122,7 +122,6 @@ try {
         $img = imagecreatetruecolor(1200, 600);
         $real = '/storage/uploads/' . basename($uploadDir) . '/real.webp';
         imagewebp($img, BVLOG_ROOT . $real);
-        imagedestroy($img);
         check(ImageProcessor::generateVariants($real) === 3, 'gd: 480/768/1080 generated for 1200px image');
         $v = @getimagesize(BVLOG_ROOT . ImageProcessor::variantPath($real, 768));
         check(is_array($v) && $v[0] === 768 && $v[1] === 384, 'gd: variant keeps aspect ratio');

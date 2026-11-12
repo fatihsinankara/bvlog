@@ -118,14 +118,10 @@ class ImageProcessor
         $relPath = "{$relDir}/{$filename}";
 
         if (!imagewebp($dst, $absPath, $quality)) {
-            imagedestroy($src);
-            imagedestroy($dst);
             throw new Exception('Görsel WebP formatına dönüştürülemedi.');
         }
 
-        imagedestroy($src);
         self::generateVariants($relPath, $dst);
-        imagedestroy($dst);
 
         $finalSize = filesize($absPath) ?: 0;
         $origName = pathinfo($file['name'] ?? 'image', PATHINFO_FILENAME);
@@ -243,12 +239,8 @@ class ImageProcessor
             if (@imagewebp($dst, $target, 82)) {
                 $created++;
             }
-            imagedestroy($dst);
         }
 
-        if ($owned) {
-            imagedestroy($source);
-        }
         return $created;
     }
 

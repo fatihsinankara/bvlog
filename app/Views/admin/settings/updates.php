@@ -20,7 +20,7 @@
             <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-1">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Yüklü Sürüm</span>
                 <div class="text-2xl font-black font-mono text-zinc-900 dark:text-zinc-100">
-                    v<?= e($updateInfo['current_version'] ?? '1.3.2') ?>
+                    v<?= e($updateInfo['current_version'] ?? '1.3.3') ?>
                 </div>
                 <span class="inline-block text-[11px] text-zinc-500">Mevcut sistem sürümünüz</span>
             </div>
@@ -28,7 +28,7 @@
             <div class="p-4 rounded-xl border <?= !empty($updateInfo['has_update']) ? 'border-amber-300 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/20' : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40' ?> space-y-1">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">En Son GitHub Sürümü</span>
                 <div class="text-2xl font-black font-mono <?= !empty($updateInfo['has_update']) ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-900 dark:text-zinc-100' ?>">
-                    v<?= e($updateInfo['latest_version'] ?? '1.3.2') ?>
+                    v<?= e($updateInfo['latest_version'] ?? '1.3.3') ?>
                 </div>
                 <span class="inline-block text-[11px] text-zinc-500">
                     Son kontrol: <?= e(!empty($updateInfo['checked_at']) ? format_date($updateInfo['checked_at'], true) : 'Henüz yapılmadı') ?>
@@ -134,14 +134,14 @@
                     <div class="space-y-0.5 text-xs">
                         <div class="font-bold text-emerald-900 dark:text-emerald-200 text-sm">Sisteminiz Güncel!</div>
                         <div class="text-emerald-700 dark:text-emerald-400">
-                            Bvlog'un en son kararlı sürümünü (v<?= e($updateInfo['current_version'] ?? '1.3.2') ?>) kullanıyorsunuz. Herhangi bir işlem yapmanıza gerek yoktur.
+                            Bvlog'un en son kararlı sürümünü (v<?= e($updateInfo['current_version'] ?? '1.3.3') ?>) kullanıyorsunuz. Herhangi bir işlem yapmanıza gerek yoktur.
                         </div>
                     </div>
                 </div>
 
                 <form action="<?= e(url('/admin/updates/apply')) ?>" method="POST"
                       x-data="{ isSubmitting: false }"
-                      @submit="if (!confirm('Mevcut v<?= e($updateInfo['current_version'] ?? '1.3.2') ?> sürümü GitHub Releases üzerinden yeniden indirilip kurulacaktır.\n\nBu işlem güncelleme motorunu test etmek veya sistem dosyalarını onarmak için kullanılır. Verileriniz korunur. Devam etmek istiyor musunuz?')) { $event.preventDefault(); return false; } isSubmitting = true;">
+                      @submit="if (!confirm('Mevcut v<?= e($updateInfo['current_version'] ?? '1.3.3') ?> sürümü GitHub Releases üzerinden yeniden indirilip kurulacaktır.\n\nBu işlem güncelleme motorunu test etmek veya sistem dosyalarını onarmak için kullanılır. Verileriniz korunur. Devam etmek istiyor musunuz?')) { $event.preventDefault(); return false; } isSubmitting = true;">
                     <?= csrf_field() ?>
                     <input type="hidden" name="force" value="1">
                     <button type="submit"

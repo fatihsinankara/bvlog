@@ -43,7 +43,7 @@ if (!is_installed()) {
 }
 
 // 2. Sürüm & Veritabanı Otomatik Yükseltme Kontrolü (FTP Güncellemeleri İçin)
-Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.3.2');
+Core\Migrator::checkAndUpgrade($appConfig['version'] ?? '1.3.3');
 
 // 3. Eklentileri Yükle (Hata korumalı ve otomatik karantina destekli)
 Core\PluginManager::boot();

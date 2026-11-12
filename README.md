@@ -1,7 +1,7 @@
 # Bvlog — Kişisel Blog, Portfolyo ve Özgeçmiş (CV) Sistemi
 
-![Version](https://img.shields.io/badge/S%C3%BCr%C3%BCm-v1.3.2-18181b?style=flat-square)
-![PHP](https://img.shields.io/badge/PHP-8.1%2B-18181b?style=flat-square&logo=php)
+![Version](https://img.shields.io/badge/S%C3%BCr%C3%BCm-v1.3.3-18181b?style=flat-square)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-18181b?style=flat-square&logo=php)
 ![MySQL](https://img.shields.io/badge/MySQL%20%2F%20MariaDB-5.7%2B-18181b?style=flat-square&logo=mysql)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-18181b?style=flat-square&logo=tailwindcss)
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-3.14-18181b?style=flat-square&logo=alpinedotjs)

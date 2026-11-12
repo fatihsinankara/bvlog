@@ -161,7 +161,7 @@ HTML;
             'Content-type: text/html; charset=UTF-8',
             'From: ' . $this->encodeHeader($fromName) . ' <' . $fromEmail . '>',
             'Reply-To: ' . ($options['reply_to'] ?? $fromEmail),
-            'X-Mailer: Bvlog/' . setting('app_version', '1.3.2'),
+            'X-Mailer: Bvlog/' . setting('app_version', '1.3.3'),
         ];
         if (!empty($options['unsubscribe_url'])) {
             $headers[] = 'List-Unsubscribe: <' . $options['unsubscribe_url'] . '>';
@@ -308,7 +308,7 @@ HTML;
             $headers[] = 'Subject: ' . $this->encodeHeader($subject);
             $headers[] = 'Message-ID: ' . $msgId;
             $headers[] = 'MIME-Version: 1.0';
-            $headers[] = 'X-Mailer: Bvlog SMTP Client/1.3.2';
+            $headers[] = 'X-Mailer: Bvlog SMTP Client/1.3.3';
             if (!empty($options['unsubscribe_url'])) {
                 $headers[] = 'List-Unsubscribe: <' . $options['unsubscribe_url'] . '>';
                 $headers[] = 'List-Unsubscribe-Post: List-Unsubscribe=One-Click';

@@ -124,7 +124,6 @@ class Updater
             // dogrulamasiz tekrar denenmez; istek basarisiz sayilir.
             $body = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
 
             if ($httpCode === 200 && is_string($body)) {
                 $data = json_decode($body, true);
@@ -492,7 +491,6 @@ class Updater
                 $success = curl_exec($ch);
 
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
                 fclose($fp);
 
                 if ($success && $httpCode === 200 && is_file($destPath) && filesize($destPath) > 10000) {
