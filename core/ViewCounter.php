@@ -8,7 +8,7 @@ class ViewCounter
 
     public static function record(int $postId): bool
     {
-        if ($postId < 1) {
+        if ($postId < 1 || !self::isHumanRequest($_SERVER)) {
             return false;
         }
 
@@ -34,6 +34,30 @@ class ViewCounter
         self::append($postId);
         self::hookFlush();
         return true;
+    }
+
+    /**
+     * Botlari, bos kullanici ajanini ve tarayici on yuklemelerini (prefetch)
+     * sayimdan cikarir. Kesin bir ayrim degildir; bilinen istemcileri eler.
+     */
+    public static function isHumanRequest(array $server): bool
+    {
+        $purpose = strtolower((string) ($server['HTTP_SEC_PURPOSE'] ?? $server['HTTP_PURPOSE'] ?? ''));
+        if (str_contains($purpose, 'prefetch') || str_contains($purpose, 'prerender')) {
+            return false;
+        }
+
+        $ua = trim((string) ($server['HTTP_USER_AGENT'] ?? ''));
+        if ($ua === '') {
+            return false;
+        }
+
+        return !preg_match(
+            '~bot\b|bot/|crawl|spider|slurp|mediapartners|facebookexternalhit|embedly|preview|'
+            . 'headless|lighthouse|pagespeed|curl/|wget/|python|httpclient|okhttp|go-http-client|'
+            . 'java/|libwww|axios/|node-fetch|guzzlehttp|scrapy|feedfetcher|monitor~i',
+            $ua
+        );
     }
 
     public static function flushIfDue(): int

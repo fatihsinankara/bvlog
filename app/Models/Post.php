@@ -152,7 +152,10 @@ class Post extends Model
     public static function allForAdmin(): array
     {
         $posts = Database::fetchAll(
-            'SELECT p.*, c.name AS category_name, c.slug AS category_slug, c.color AS category_color, c.icon AS category_icon
+            // Liste icerik ve SEO alanlarini kullanmaz; yazi govdesi (LONGTEXT) cekilmez.
+            'SELECT p.id, p.user_id, p.category_id, p.title, p.slug, p.cover_image, p.is_featured, p.status,
+                    p.views_count, p.published_at, p.created_at, p.updated_at,
+                    c.name AS category_name, c.slug AS category_slug, c.color AS category_color, c.icon AS category_icon
              FROM posts p
              LEFT JOIN categories c ON c.id = p.category_id
              ORDER BY p.id DESC'

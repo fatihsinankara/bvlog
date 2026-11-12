@@ -70,7 +70,6 @@ CREATE TABLE IF NOT EXISTS `posts` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL,
-    INDEX `idx_posts_slug` (`slug`),
     INDEX `idx_posts_status_published` (`status`, `published_at`),
     FULLTEXT KEY `ft_posts_search` (`title`, `summary`, `content`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -195,7 +194,6 @@ CREATE TABLE IF NOT EXISTS `collections` (
     `status` ENUM('published', 'draft') DEFAULT 'published',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    KEY `idx_collections_slug` (`slug`),
     KEY `idx_collections_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
