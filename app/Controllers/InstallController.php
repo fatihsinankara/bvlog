@@ -318,9 +318,9 @@ HTML;
     {
         return [
             [
-                'label'  => 'PHP Sürümü (8.1 veya üzeri)',
+                'label'  => 'PHP Sürümü (8.2 veya üzeri)',
                 'detail' => 'Mevcut: PHP ' . PHP_VERSION,
-                'passed' => version_compare(PHP_VERSION, '8.1.0', '>='),
+                'passed' => version_compare(PHP_VERSION, '8.2.0', '>='),
             ],
             [
                 'label'  => 'PDO MySQL Uzantısı',
