@@ -95,7 +95,7 @@ use Core\View;
         <?php if ($totalPages > 1): ?>
             <div class="pt-8 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs font-medium">
                 <?php if ($page > 1): ?>
-                    <a href="<?= e(url(Request::path(), array_merge($_GET, ['page' => $page - 1]))) ?>"
+                    <a href="<?= e(url(\Core\Request::path()) . '?' . http_build_query(array_merge($_GET, ['page' => $page - 1]))) ?>"
                        class="text-zinc-700 dark:text-zinc-300 hover:underline">
                         &larr; Önceki Yazılar
                     </a>
@@ -108,7 +108,7 @@ use Core\View;
                 </span>
 
                 <?php if ($page < $totalPages): ?>
-                    <a href="<?= e(url(Request::path(), array_merge($_GET, ['page' => $page + 1]))) ?>"
+                    <a href="<?= e(url(\Core\Request::path()) . '?' . http_build_query(array_merge($_GET, ['page' => $page + 1]))) ?>"
                        class="text-zinc-700 dark:text-zinc-300 hover:underline">
                         Sonraki Yazılar &rarr;
                     </a>
