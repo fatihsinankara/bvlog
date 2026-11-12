@@ -2,18 +2,38 @@
 
 namespace Plugins\Newsletter;
 
+use App\Models\Setting;
 use Core\Database;
 
 class NewsletterSchema
 {
-    private static bool $checked = false;
+    /** Tablo tanimlari degisirse artirilir; kurulu surum ayarlarda tutulur. */
+    public const SCHEMA_VERSION = '1';
+    private const VERSION_KEY = 'newsletter_schema_version';
 
-    public static function ensureTables(): void
+    private static bool $checked = false;
+    private static bool $created = false;
+
+    /**
+     * Tablolari bir kez kurar. Kurulu surum ayarlardan (onbellekli) okunur;
+     * boylece her istekte DDL calismaz ve veritabani baglantisi acilmaz.
+     * $force, yonetim panelinde eksik tablolari onarmak icin kontrolu zorlar.
+     */
+    public static function ensureTables(bool $force = false): void
     {
-        if (self::$checked) {
+        if (self::$created) {
             return;
         }
-        self::$checked = true;
+        if (!$force) {
+            if (self::$checked) {
+                return;
+            }
+            self::$checked = true;
+            if ((string) setting(self::VERSION_KEY, '') === self::SCHEMA_VERSION) {
+                return;
+            }
+        }
+        self::$created = true;
 
         try {
             $pdo = Database::getInstance();
@@ -51,6 +71,10 @@ class NewsletterSchema
                 `sent_at` DATETIME NULL,
                 `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+            if ((string) setting(self::VERSION_KEY, '') !== self::SCHEMA_VERSION) {
+                Setting::set(self::VERSION_KEY, self::SCHEMA_VERSION);
+            }
         } catch (\Throwable $e) {
             // Kurulum öncesi veya geçici DB hatasında sessizce geç
         }
