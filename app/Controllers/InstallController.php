@@ -329,7 +329,7 @@ HTML;
             ],
             [
                 'label'  => 'GD Resim İşleme & WebP Desteği',
-                'detail' => 'Otomatik 1080px boyutlandırma ve WebP sıkıştırma için',
+                'detail' => 'Otomatik 1600px boyutlandırma, srcset varyantları ve WebP sıkıştırma için',
                 'passed' => extension_loaded('gd') && function_exists('imagewebp'),
             ],
             [

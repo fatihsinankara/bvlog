@@ -118,6 +118,7 @@ Core\Router::post('/admin/categories/{id}/delete', [App\Controllers\Admin\Catego
 Core\Router::get('/admin/media', [App\Controllers\Admin\MediaController::class, 'index'], ['auth']);
 Core\Router::get('/admin/media/json', [App\Controllers\Admin\MediaController::class, 'listJson'], ['auth']);
 Core\Router::post('/admin/media/upload', [App\Controllers\Admin\MediaController::class, 'upload'], ['auth']);
+Core\Router::post('/admin/media/variants', [App\Controllers\Admin\MediaController::class, 'generateVariants'], ['auth']);
 Core\Router::post('/admin/media/{id}/update', [App\Controllers\Admin\MediaController::class, 'update'], ['auth']);
 Core\Router::post('/admin/media/{id}/delete', [App\Controllers\Admin\MediaController::class, 'delete'], ['auth']);
 
